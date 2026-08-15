@@ -11,3 +11,6 @@ Thumbs.db
 
 # 本地 GitHub token（含 repo 权限，禁止提交）
 .github_token
+
+# 本地部署测试脚本（仅本地用，复制 main.js 到测试 vault，不公开）
+scripts/deploy.mjs
