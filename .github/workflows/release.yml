@@ -1,0 +1,36 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+
+# 允许工作流创建/更新 Release（上传构件）
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 安装依赖并构建
+        run: |
+          npm install
+          npm run build
+
+      - name: 发布到 latest Release（覆盖更新）
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          name: latest
+          allowUpdates: true
+          removeArtifacts: true
+          artifacts: "manifest.json,main.js,styles.css"
+          token: ${{ secrets.GITHUB_TOKEN }}

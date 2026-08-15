@@ -293,6 +293,7 @@ var TextProcessorPlugin = class extends import_obsidian3.Plugin {
   }
   async onload() {
     await this.loadSettings();
+    this.registerIcons();
     this.registerAllCommands();
     this.addSettingTab(new TextProcessorSettingTab(this.app, this));
     this.registerEvent(this.app.workspace.on("editor-menu", this.onEditorMenu));
@@ -313,6 +314,13 @@ var TextProcessorPlugin = class extends import_obsidian3.Plugin {
   fullId(id) {
     return `${this.manifest.id}:${id}`;
   }
+  // 注册自定义「双 T」图标（两个紧密排列的 T），用于命令与移动端工具栏
+  registerIcons() {
+    this.addIcon(
+      "text-batch",
+      '<path d="M3.5 6h7"/><path d="M7 6v13"/><path d="M13.5 6h7"/><path d="M17 6v13"/>'
+    );
+  }
   clearCommands() {
     for (const id of this.commandIds) {
       this.app.commands.removeCommand(id);
@@ -324,6 +332,7 @@ var TextProcessorPlugin = class extends import_obsidian3.Plugin {
     this.addCommand({
       id: "open-picker",
       name: "\u9009\u62E9\u52A8\u4F5C\u6216\u5E8F\u5217\uFF08\u83DC\u5355\uFF09",
+      icon: "text-batch",
       callback: () => {
         new PickerModal(this.app, this).open();
       }
@@ -333,6 +342,7 @@ var TextProcessorPlugin = class extends import_obsidian3.Plugin {
       this.addCommand({
         id: `action:${action.id}`,
         name: `\u52A8\u4F5C\uFF1A${action.name}`,
+        icon: "text-cursor-input",
         editorCallback: (editor) => this.runOnEditor(editor, (t) => runAction(action, t))
       });
       this.commandIds.push(this.fullId(`action:${action.id}`));
@@ -342,6 +352,7 @@ var TextProcessorPlugin = class extends import_obsidian3.Plugin {
       this.addCommand({
         id: `sequence:${seq.id}`,
         name: `\u5E8F\u5217\uFF1A${seq.name}`,
+        icon: "text-cursor-input",
         editorCallback: (editor) => this.runOnEditor(editor, (t) => runSequence(seq, map, t))
       });
       this.commandIds.push(this.fullId(`sequence:${seq.id}`));

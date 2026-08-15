@@ -10,6 +10,7 @@ export default class TextProcessorPlugin extends Plugin {
 
   async onload() {
     await this.loadSettings();
+    this.registerIcons();
     this.registerAllCommands();
     this.addSettingTab(new TextProcessorSettingTab(this.app, this));
     // 桌面端：选中文本后右键菜单出现“文本批处理”
@@ -40,6 +41,14 @@ export default class TextProcessorPlugin extends Plugin {
     return `${this.manifest.id}:${id}`;
   }
 
+  // 注册自定义「双 T」图标（两个紧密排列的 T），用于命令与移动端工具栏
+  private registerIcons() {
+    this.addIcon(
+      'text-batch',
+      '<path d="M3.5 6h7"/><path d="M7 6v13"/><path d="M13.5 6h7"/><path d="M17 6v13"/>'
+    );
+  }
+
   private clearCommands() {
     for (const id of this.commandIds) {
       // 动态移除旧命令，保证动作/序列增删改名后命令面板是最新的
@@ -55,6 +64,7 @@ export default class TextProcessorPlugin extends Plugin {
     this.addCommand({
       id: 'open-picker',
       name: '选择动作或序列（菜单）',
+      icon: 'text-batch',
       callback: () => {
         new PickerModal(this.app, this).open();
       },
@@ -66,6 +76,7 @@ export default class TextProcessorPlugin extends Plugin {
       this.addCommand({
         id: `action:${action.id}`,
         name: `动作：${action.name}`,
+        icon: 'text-cursor-input',
         editorCallback: (editor: Editor) =>
           this.runOnEditor(editor, (t) => runAction(action, t)),
       });
@@ -78,6 +89,7 @@ export default class TextProcessorPlugin extends Plugin {
       this.addCommand({
         id: `sequence:${seq.id}`,
         name: `序列：${seq.name}`,
+        icon: 'text-cursor-input',
         editorCallback: (editor: Editor) =>
           this.runOnEditor(editor, (t) => runSequence(seq, map, t)),
       });
