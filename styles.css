@@ -1,0 +1,5 @@
+/* 文本批处理插件样式 */
+.text-batch-code {
+  font-family: var(--font-monospace);
+  width: 100%;
+}
