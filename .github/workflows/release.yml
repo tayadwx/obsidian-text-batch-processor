@@ -12,25 +12,49 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: 检出代码
+      - name: 检出代码（含完整 tag 历史）
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: 设置 Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      - name: 计算新版本号（自动在最新 tag 的 patch +1）
+        id: version
+        run: |
+          # 取所有形如 x.y.z（可带可选 v 前缀）的 tag，按版本号排序取最大
+          LATEST=$(git tag --list | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | sed 's/^v//' | sort -V | tail -1)
+          if [ -z "$LATEST" ]; then
+            # 仓库里还没有语义化 tag：视为首次发布，直接使用 manifest.json 的版本号（不 +1）
+            NEW=$(node -p "require('./manifest.json').version")
+            echo "首次发布，使用 manifest.json 版本: $NEW"
+          else
+            echo "上一个语义化版本: $LATEST"
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST"
+            PATCH=$((PATCH + 1))
+            NEW="${MAJOR}.${MINOR}.${PATCH}"
+            echo "在 $LATEST 基础上 patch +1 -> $NEW"
+          fi
+          echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
+
+      - name: 将新版本号写回 manifest.json
+        run: node -e "const fs=require('fs');const p='./manifest.json';const m=JSON.parse(fs.readFileSync(p,'utf8'));m.version='${{ steps.version.outputs.new_version }}';fs.writeFileSync(p,JSON.stringify(m,null,2)+'\n');console.log('manifest.json version -> '+m.version);"
+
       - name: 安装依赖并构建
         run: |
           npm install
           npm run build
 
-      - name: 发布到 latest Release（覆盖更新）
+      - name: 发布 Release（语义化 tag，自动递增 patch）
         uses: ncipollo/release-action@v1
         with:
-          tag: latest
-          name: latest
-          allowUpdates: true
-          removeArtifacts: true
+          tag: ${{ steps.version.outputs.new_version }}
+          name: ${{ steps.version.outputs.new_version }}
+          allowUpdates: false
+          makeLatest: true
           artifacts: "manifest.json,main.js,styles.css"
           token: ${{ secrets.GITHUB_TOKEN }}
