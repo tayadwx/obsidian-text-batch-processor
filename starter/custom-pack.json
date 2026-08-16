@@ -1,0 +1,179 @@
+{
+  "$schema": "text-batch-processor-pack",
+  "version": 1,
+  "actions": [
+    {
+      "name": "英文转小写",
+      "code": "return text.toLowerCase();",
+      "category": "英文处理",
+      "favorite": false
+    },
+    {
+      "name": "英文转大写",
+      "code": "return text.toUpperCase();",
+      "category": "英文处理",
+      "favorite": false
+    },
+    {
+      "name": "英文标题式大小写",
+      "code": "const ABBR = new Set([\"USA\",\"UK\",\"UAE\",\"EU\",\"UN\",\"NATO\",\"NASA\",\"FBI\",\"CIA\",\"NSA\",\"WHO\",\"WTO\",\"IMF\",\"OECD\",\"OPEC\",\"G7\",\"G8\",\"G20\",\"BRICS\",\"APEC\",\"ASEAN\",\"CNN\",\"BBC\",\"ABC\",\"NBC\",\"CBS\",\"ESPN\",\"NBA\",\"NFL\",\"NHL\",\"MLB\",\"FIFA\",\"UEFA\",\"WWE\",\"IOC\",\"PGA\",\"F1\",\"WTA\",\"ATP\",\"NCAA\",\"MVP\",\"GOAT\",\"USB\",\"CPU\",\"GPU\",\"RAM\",\"ROM\",\"SSD\",\"HDD\",\"BIOS\",\"OS\",\"PC\",\"MAC\",\"APP\",\"API\",\"SDK\",\"HTML\",\"CSS\",\"JS\",\"TS\",\"JSX\",\"JSON\",\"XML\",\"YAML\",\"CSV\",\"SQL\",\"NOSQL\",\"PDF\",\"DOC\",\"DOCX\",\"PPT\",\"PPTX\",\"XLS\",\"XLSX\",\"ZIP\",\"RAR\",\"PNG\",\"JPG\",\"JPEG\",\"GIF\",\"BMP\",\"SVG\",\"MP3\",\"MP4\",\"WAV\",\"AVI\",\"MKV\",\"MOV\",\"FLAC\",\"AAC\",\"HTTP\",\"HTTPS\",\"FTP\",\"SFTP\",\"SSH\",\"TCP\",\"IP\",\"UDP\",\"DNS\",\"DHCP\",\"URL\",\"URI\",\"WWW\",\"LAN\",\"WAN\",\"WLAN\",\"VPN\",\"WIFI\",\"GSM\",\"CDMA\",\"LTE\",\"IOT\",\"AI\",\"ML\",\"DL\",\"NLP\",\"CV\",\"OCR\",\"TPU\",\"NPU\",\"UI\",\"UX\",\"QA\",\"QC\",\"CI\",\"CD\",\"HR\",\"IT\",\"PR\",\"MR\",\"CEO\",\"CFO\",\"CTO\",\"COO\",\"CIO\",\"CMO\",\"VP\",\"PM\",\"PO\",\"BA\",\"BSC\",\"MSC\",\"PHD\",\"MD\",\"MBA\",\"JD\",\"CPA\",\"RN\",\"DNA\",\"RNA\",\"HIV\",\"AIDS\",\"COVID\",\"SARS\",\"MERS\",\"FDA\",\"CDC\",\"NIH\",\"EPA\",\"SEC\",\"IRS\",\"FCC\",\"FAA\",\"IBM\",\"HP\",\"DELL\",\"INTEL\",\"AMD\",\"ARM\",\"IOS\",\"AWS\",\"AZURE\",\"GCP\",\"HDMI\",\"VGA\",\"DVI\",\"SATA\",\"PCI\",\"PCIE\",\"BT\",\"BLE\",\"RFID\",\"NFC\",\"POS\",\"ATM\",\"PIN\",\"CVV\",\"ID\",\"VIP\",\"OK\",\"TV\",\"DVD\",\"CD\",\"GPS\",\"GIS\",\"LBS\",\"CMS\",\"CRM\",\"ERP\",\"SCM\",\"PLM\",\"BOM\",\"KPI\",\"OKR\",\"ROI\",\"CTR\",\"CPC\",\"CPM\",\"SEO\",\"SEM\",\"SMM\",\"DAU\",\"MAU\",\"ARPU\",\"LTV\",\"GMV\",\"SKU\",\"UPC\",\"EAN\",\"ISBN\",\"ISSN\",\"DOI\",\"TOML\",\"INI\",\"ENV\",\"LOG\",\"SRC\",\"LIB\",\"BIN\",\"VAR\",\"CONST\",\"FUNC\",\"ASYNC\",\"AWAIT\",\"NPM\",\"YARN\",\"PNPM\",\"NODE\",\"DENO\",\"BUN\",\"PY\",\"PIP\",\"RUBY\",\"GEM\",\"CARGO\",\"GO\",\"JAVA\",\"KOTLIN\",\"SWIFT\",\"RUST\",\"CPP\",\"CXX\",\"CS\",\"VB\",\"PHP\",\"PERL\",\"SHELL\",\"BASH\",\"ZSH\",\"SH\",\"PWSH\",\"CMD\",\"PS1\",\"MYSQL\",\"POSTGRES\",\"PG\",\"SQLITE\",\"MONGO\",\"REDIS\",\"DOCKER\",\"K8S\",\"KUBE\",\"HELM\",\"TERRA\",\"ANSIBLE\",\"GIT\",\"SVN\",\"HG\",\"JVM\",\"JIT\",\"GC\",\"OOM\",\"MEM\",\"DISK\",\"IO\",\"TTY\",\"PID\",\"UID\",\"GID\",\"SUDO\",\"ROOT\",\"ADMIN\",\"PUBLIC\",\"PRIVATE\",\"PROXY\",\"VLAN\",\"NAT\",\"PAT\",\"CIDR\",\"IPV4\",\"IPV6\",\"BGP\",\"OSPF\",\"RIP\",\"WS\",\"WSS\",\"GRPC\",\"REST\",\"SOAP\",\"RPC\",\"JWT\",\"OAUTH\",\"SAML\",\"OIDC\",\"CSRF\",\"XSS\",\"SQLI\",\"DDOS\",\"DOS\",\"MITM\",\"SSL\",\"TLS\",\"PGP\",\"GPG\",\"RSA\",\"AES\",\"DES\",\"SHA\",\"MD5\",\"HMAC\",\"BASE64\",\"UTF8\",\"ASCII\",\"UNICODE\",\"MIME\",\"SMTP\",\"POP3\",\"IMAP\",\"TOR\",\"CDN\",\"EDGE\",\"LB\",\"ALB\",\"NLB\",\"ELB\",\"ECS\",\"RDS\",\"S3\",\"OSS\",\"COS\",\"OBS\",\"BLOB\",\"REGION\",\"AZ\",\"VPC\",\"SG\",\"AMI\",\"EC2\",\"FC\",\"LAMBDA\",\"CRUD\",\"ACID\",\"BASE\",\"CAP\",\"ORM\",\"ODBC\",\"JDBC\",\"JPA\",\"SPRING\",\"DJANGO\",\"FLASK\",\"FASTAPI\",\"EXPRESS\",\"NEST\",\"GIN\",\"TF\",\"TORCH\",\"KERAS\",\"ONNX\",\"CUDA\",\"SIMD\",\"FPU\",\"ALU\",\"CU\",\"ESLINT\",\"PRETTIER\",\"JEST\",\"VITEST\",\"NEXT\",\"NUXT\",\"REMIX\",\"SVELTE\",\"VUE\",\"REACT\",\"ANGULAR\",\"SOLID\",\"DRY\",\"KISS\",\"YAGNI\",\"MVC\",\"MVVM\",\"DOM\",\"AST\",\"LSP\",\"IDE\",\"CLI\",\"GUI\",\"TUI\",\"REPL\",\"SASS\",\"LESS\",\"WEBPACK\",\"VITE\",\"ROLLUP\",\"ESBUILD\",\"BABEL\",\"TSC\",\"CYPRESS\",\"PLAYWRIGHT\",\"MOCA\"]);\nfunction titleCase(t) {\n  const small = new Set(['a','an','the','and','but','or','for','nor','so','yet','on','at','to','by','in','of','as','with','from','into','onto','upon','off','out','up','down','about','over','after','before','between','through','during','within','without','against','among','per','via','vs','etc']);\n  const parts = t.toLowerCase().split(/(\\s+)/);\n  let last = -1;\n  for (let i = 0; i < parts.length; i++) { if (!/^\\s+$/.test(parts[i])) last = i; }\n  for (let i = 0; i < parts.length; i++) {\n    const w = parts[i];\n    if (/^\\s+$/.test(w) || w === '') continue;\n    const up = w.toUpperCase();\n    if (ABBR.has(up)) { parts[i] = up; continue; }\n    if (i === 0 || i === last) { parts[i] = w.charAt(0).toUpperCase() + w.slice(1); }\n    else if (small.has(w)) { parts[i] = w; }\n    else { parts[i] = w.charAt(0).toUpperCase() + w.slice(1); }\n  }\n  return parts.join('');\n}\nreturn titleCase(text);",
+      "category": "英文处理",
+      "favorite": true
+    },
+    {
+      "name": "英文单词首字母大写",
+      "code": "const ABBR = new Set([\"USA\",\"UK\",\"UAE\",\"EU\",\"UN\",\"NATO\",\"NASA\",\"FBI\",\"CIA\",\"NSA\",\"WHO\",\"WTO\",\"IMF\",\"OECD\",\"OPEC\",\"G7\",\"G8\",\"G20\",\"BRICS\",\"APEC\",\"ASEAN\",\"CNN\",\"BBC\",\"ABC\",\"NBC\",\"CBS\",\"ESPN\",\"NBA\",\"NFL\",\"NHL\",\"MLB\",\"FIFA\",\"UEFA\",\"WWE\",\"IOC\",\"PGA\",\"F1\",\"WTA\",\"ATP\",\"NCAA\",\"MVP\",\"GOAT\",\"USB\",\"CPU\",\"GPU\",\"RAM\",\"ROM\",\"SSD\",\"HDD\",\"BIOS\",\"OS\",\"PC\",\"MAC\",\"APP\",\"API\",\"SDK\",\"HTML\",\"CSS\",\"JS\",\"TS\",\"JSX\",\"JSON\",\"XML\",\"YAML\",\"CSV\",\"SQL\",\"NOSQL\",\"PDF\",\"DOC\",\"DOCX\",\"PPT\",\"PPTX\",\"XLS\",\"XLSX\",\"ZIP\",\"RAR\",\"PNG\",\"JPG\",\"JPEG\",\"GIF\",\"BMP\",\"SVG\",\"MP3\",\"MP4\",\"WAV\",\"AVI\",\"MKV\",\"MOV\",\"FLAC\",\"AAC\",\"HTTP\",\"HTTPS\",\"FTP\",\"SFTP\",\"SSH\",\"TCP\",\"IP\",\"UDP\",\"DNS\",\"DHCP\",\"URL\",\"URI\",\"WWW\",\"LAN\",\"WAN\",\"WLAN\",\"VPN\",\"WIFI\",\"GSM\",\"CDMA\",\"LTE\",\"IOT\",\"AI\",\"ML\",\"DL\",\"NLP\",\"CV\",\"OCR\",\"TPU\",\"NPU\",\"UI\",\"UX\",\"QA\",\"QC\",\"CI\",\"CD\",\"HR\",\"IT\",\"PR\",\"MR\",\"CEO\",\"CFO\",\"CTO\",\"COO\",\"CIO\",\"CMO\",\"VP\",\"PM\",\"PO\",\"BA\",\"BSC\",\"MSC\",\"PHD\",\"MD\",\"MBA\",\"JD\",\"CPA\",\"RN\",\"DNA\",\"RNA\",\"HIV\",\"AIDS\",\"COVID\",\"SARS\",\"MERS\",\"FDA\",\"CDC\",\"NIH\",\"EPA\",\"SEC\",\"IRS\",\"FCC\",\"FAA\",\"IBM\",\"HP\",\"DELL\",\"INTEL\",\"AMD\",\"ARM\",\"IOS\",\"AWS\",\"AZURE\",\"GCP\",\"HDMI\",\"VGA\",\"DVI\",\"SATA\",\"PCI\",\"PCIE\",\"BT\",\"BLE\",\"RFID\",\"NFC\",\"POS\",\"ATM\",\"PIN\",\"CVV\",\"ID\",\"VIP\",\"OK\",\"TV\",\"DVD\",\"CD\",\"GPS\",\"GIS\",\"LBS\",\"CMS\",\"CRM\",\"ERP\",\"SCM\",\"PLM\",\"BOM\",\"KPI\",\"OKR\",\"ROI\",\"CTR\",\"CPC\",\"CPM\",\"SEO\",\"SEM\",\"SMM\",\"DAU\",\"MAU\",\"ARPU\",\"LTV\",\"GMV\",\"SKU\",\"UPC\",\"EAN\",\"ISBN\",\"ISSN\",\"DOI\",\"TOML\",\"INI\",\"ENV\",\"LOG\",\"SRC\",\"LIB\",\"BIN\",\"VAR\",\"CONST\",\"FUNC\",\"ASYNC\",\"AWAIT\",\"NPM\",\"YARN\",\"PNPM\",\"NODE\",\"DENO\",\"BUN\",\"PY\",\"PIP\",\"RUBY\",\"GEM\",\"CARGO\",\"GO\",\"JAVA\",\"KOTLIN\",\"SWIFT\",\"RUST\",\"CPP\",\"CXX\",\"CS\",\"VB\",\"PHP\",\"PERL\",\"SHELL\",\"BASH\",\"ZSH\",\"SH\",\"PWSH\",\"CMD\",\"PS1\",\"MYSQL\",\"POSTGRES\",\"PG\",\"SQLITE\",\"MONGO\",\"REDIS\",\"DOCKER\",\"K8S\",\"KUBE\",\"HELM\",\"TERRA\",\"ANSIBLE\",\"GIT\",\"SVN\",\"HG\",\"JVM\",\"JIT\",\"GC\",\"OOM\",\"MEM\",\"DISK\",\"IO\",\"TTY\",\"PID\",\"UID\",\"GID\",\"SUDO\",\"ROOT\",\"ADMIN\",\"PUBLIC\",\"PRIVATE\",\"PROXY\",\"VLAN\",\"NAT\",\"PAT\",\"CIDR\",\"IPV4\",\"IPV6\",\"BGP\",\"OSPF\",\"RIP\",\"WS\",\"WSS\",\"GRPC\",\"REST\",\"SOAP\",\"RPC\",\"JWT\",\"OAUTH\",\"SAML\",\"OIDC\",\"CSRF\",\"XSS\",\"SQLI\",\"DDOS\",\"DOS\",\"MITM\",\"SSL\",\"TLS\",\"PGP\",\"GPG\",\"RSA\",\"AES\",\"DES\",\"SHA\",\"MD5\",\"HMAC\",\"BASE64\",\"UTF8\",\"ASCII\",\"UNICODE\",\"MIME\",\"SMTP\",\"POP3\",\"IMAP\",\"TOR\",\"CDN\",\"EDGE\",\"LB\",\"ALB\",\"NLB\",\"ELB\",\"ECS\",\"RDS\",\"S3\",\"OSS\",\"COS\",\"OBS\",\"BLOB\",\"REGION\",\"AZ\",\"VPC\",\"SG\",\"AMI\",\"EC2\",\"FC\",\"LAMBDA\",\"CRUD\",\"ACID\",\"BASE\",\"CAP\",\"ORM\",\"ODBC\",\"JDBC\",\"JPA\",\"SPRING\",\"DJANGO\",\"FLASK\",\"FASTAPI\",\"EXPRESS\",\"NEST\",\"GIN\",\"TF\",\"TORCH\",\"KERAS\",\"ONNX\",\"CUDA\",\"SIMD\",\"FPU\",\"ALU\",\"CU\",\"ESLINT\",\"PRETTIER\",\"JEST\",\"VITEST\",\"NEXT\",\"NUXT\",\"REMIX\",\"SVELTE\",\"VUE\",\"REACT\",\"ANGULAR\",\"SOLID\",\"DRY\",\"KISS\",\"YAGNI\",\"MVC\",\"MVVM\",\"DOM\",\"AST\",\"LSP\",\"IDE\",\"CLI\",\"GUI\",\"TUI\",\"REPL\",\"SASS\",\"LESS\",\"WEBPACK\",\"VITE\",\"ROLLUP\",\"ESBUILD\",\"BABEL\",\"TSC\",\"CYPRESS\",\"PLAYWRIGHT\",\"MOCA\"]);\nfunction startCase(t) {\n  const parts = t.toLowerCase().split(/(\\s+)/);\n  for (let i = 0; i < parts.length; i++) {\n    const w = parts[i];\n    if (/^\\s+$/.test(w) || w === '') continue;\n    const up = w.toUpperCase();\n    if (ABBR.has(up)) { parts[i] = up; continue; }\n    parts[i] = w.charAt(0).toUpperCase() + w.slice(1);\n  }\n  return parts.join('');\n}\nreturn startCase(text);",
+      "category": "英文处理",
+      "favorite": true
+    },
+    {
+      "name": "Markdown列表修正",
+      "code": "function fmtList(t) {\n  let s = t.replace(/\\r\\n?/g, '\\n');\n  s = s.replace(/([^\\n])([ \\t]*)((?:\\d+[.)]|[-*+])[ \\t]+)/g, function(m, before, ws, marker) {\n    return before + '\\n' + ws + marker;\n  });\n  const lines = s.split('\\n');\n  const out = [];\n  for (let line of lines) {\n    const x = line.trim();\n    if (x === '') { out.push(''); continue; }\n    const om = x.match(/^(\\d+)[.)][ \\t]+(.*)$/);\n    const um = x.match(/^([-*+])[ \\t]+(.*)$/);\n    if (om) { out.push(om[1] + '. ' + om[2].trim()); }\n    else if (um) { out.push('- ' + um[2].trim()); }\n    else { out.push(x); }\n  }\n  return out.join('\\n');\n}\nreturn fmtList(text);",
+      "category": "Markdown列表",
+      "favorite": true
+    },
+    {
+      "name": "注释与代码格式化",
+      "code": "const CLI = /^(?:cd|ls|pwd|mkdir|rm|cp|mv|git|npm|yarn|pnpm|npx|python|python3|pip|pip3|node|brew|sudo|chmod|chown|cat|echo|curl|wget|ssh|scp|tar|unzip|grep|find|docker|kubectl|code|vim|nano|clear|export|source|apt|apt-get|yum|dnf|pacman|make|gcc|g\\+\\+|go|java|javac|ruby|php|composer|nginx|systemctl|service|ping|telnet|netstat|ifconfig|ps|kill|top|htop|tmux|screen|rsync|sed|awk|tail|head|less|more|touch|ln|df|du|free|uname|whoami|which|whereis|watch|date|sh|bash|zsh|cmd|powershell|cls|dir|copy|move|del|type|set|call|gradle|mvn|cargo|rustc|conda|pytest|jest|tsc|webpack|vite|helm|terraform|ansible|az|gcloud|aws|docker-compose)\\b/;\nconst FENCE = String.fromCharCode(96, 96, 96);\nlet lines = text.replace(/\\r\\n?/g, '\\n').split('\\n');\nlines = lines.map(function(l) {\n  const m = l.match(/^#\\s+(?!#)(.*)$/);\n  return m ? '> ' + m[1] : l;\n});\nconst out = [];\nlet i = 0;\nwhile (i < lines.length) {\n  if (CLI.test(lines[i].trim())) {\n    const block = [];\n    while (i < lines.length && CLI.test(lines[i].trim())) { block.push(lines[i].trim()); i++; }\n    out.push(FENCE);\n    out.push(block.join('\\n'));\n    out.push(FENCE);\n  } else { out.push(lines[i]); i++; }\n}\nreturn out.join('\\n');",
+      "category": "注释代码",
+      "favorite": true
+    },
+    {
+      "name": "去除Markdown样式标记",
+      "code": "function plain(t) {\n  const BT = String.fromCharCode(96);\n  let s = t;\n  s = s.replace(/!\\[([^\\]]*)\\]\\([^)]*\\)/g, '$1');\n  s = s.replace(/\\[([^\\]]*)\\]\\([^)]*\\)/g, '$1');\n  s = s.replace(/\\*\\*([^*]+)\\*\\*/g, '$1').replace(/__([^_]+)__/g, '$1');\n  s = s.replace(/\\*([^*]+)\\*/g, '$1').replace(/_([^_]+)_/g, '$1');\n  s = s.replace(/~~([^~]+)~~/g, '$1');\n  s = s.replace(/==([^=]+)==/g, '$1');\n  s = s.replace(new RegExp(BT + '([^' + BT + ']+)' + BT, 'g'), '$1');\n  return s;\n}\nreturn plain(text);",
+      "category": "Markdown格式化",
+      "favorite": false
+    },
+    {
+      "name": "压缩多余空行",
+      "code": "function squeeze(t) {\n  let lines = t.replace(/\\r\\n?/g, '\\n').split('\\n');\n  const out = [];\n  let blank = false;\n  const isBlank = function(l) { return /^[\\s\\u00A0\\u3000\\u200B\\u200C\\u200D\\uFEFF]*$/.test(l); };\n  for (let l of lines) {\n    if (isBlank(l)) { if (!blank) { out.push(''); blank = true; } }\n    else { out.push(l); blank = false; }\n  }\n  return out.join('\\n');\n}\nreturn squeeze(text);",
+      "category": "Markdown格式化",
+      "favorite": false
+    },
+    {
+      "name": "Callout-note",
+      "code": "const body = text.split('\\n').map(function(l){ return '> ' + l; }).join('\\n');\nreturn '> [!' + 'note' + ']\\n' + body;",
+      "category": "Callout",
+      "favorite": false
+    },
+    {
+      "name": "Callout-abstract",
+      "code": "const body = text.split('\\n').map(function(l){ return '> ' + l; }).join('\\n');\nreturn '> [!' + 'abstract' + ']\\n' + body;",
+      "category": "Callout",
+      "favorite": false
+    },
+    {
+      "name": "Callout-info",
+      "code": "const body = text.split('\\n').map(function(l){ return '> ' + l; }).join('\\n');\nreturn '> [!' + 'info' + ']\\n' + body;",
+      "category": "Callout",
+      "favorite": false
+    },
+    {
+      "name": "Callout-todo",
+      "code": "const body = text.split('\\n').map(function(l){ return '> ' + l; }).join('\\n');\nreturn '> [!' + 'todo' + ']\\n' + body;",
+      "category": "Callout",
+      "favorite": false
+    },
+    {
+      "name": "Callout-tip",
+      "code": "const body = text.split('\\n').map(function(l){ return '> ' + l; }).join('\\n');\nreturn '> [!' + 'tip' + ']\\n' + body;",
+      "category": "Callout",
+      "favorite": false
+    },
+    {
+      "name": "Callout-success",
+      "code": "const body = text.split('\\n').map(function(l){ return '> ' + l; }).join('\\n');\nreturn '> [!' + 'success' + ']\\n' + body;",
+      "category": "Callout",
+      "favorite": false
+    },
+    {
+      "name": "Callout-question",
+      "code": "const body = text.split('\\n').map(function(l){ return '> ' + l; }).join('\\n');\nreturn '> [!' + 'question' + ']\\n' + body;",
+      "category": "Callout",
+      "favorite": false
+    },
+    {
+      "name": "Callout-warning",
+      "code": "const body = text.split('\\n').map(function(l){ return '> ' + l; }).join('\\n');\nreturn '> [!' + 'warning' + ']\\n' + body;",
+      "category": "Callout",
+      "favorite": false
+    },
+    {
+      "name": "Callout-failure",
+      "code": "const body = text.split('\\n').map(function(l){ return '> ' + l; }).join('\\n');\nreturn '> [!' + 'failure' + ']\\n' + body;",
+      "category": "Callout",
+      "favorite": false
+    },
+    {
+      "name": "Callout-danger",
+      "code": "const body = text.split('\\n').map(function(l){ return '> ' + l; }).join('\\n');\nreturn '> [!' + 'danger' + ']\\n' + body;",
+      "category": "Callout",
+      "favorite": false
+    },
+    {
+      "name": "Callout-bug",
+      "code": "const body = text.split('\\n').map(function(l){ return '> ' + l; }).join('\\n');\nreturn '> [!' + 'bug' + ']\\n' + body;",
+      "category": "Callout",
+      "favorite": false
+    },
+    {
+      "name": "Callout-example",
+      "code": "const body = text.split('\\n').map(function(l){ return '> ' + l; }).join('\\n');\nreturn '> [!' + 'example' + ']\\n' + body;",
+      "category": "Callout",
+      "favorite": false
+    },
+    {
+      "name": "Callout-quote",
+      "code": "const body = text.split('\\n').map(function(l){ return '> ' + l; }).join('\\n');\nreturn '> [!' + 'quote' + ']\\n' + body;",
+      "category": "Callout",
+      "favorite": false
+    },
+    {
+      "name": "Callout-弹窗选择",
+      "code": "const types = ['note','abstract','info','todo','tip','success','question','warning','failure','danger','bug','example','quote'];\nlet t = (typeof prompt !== 'undefined') ? prompt('Callout 类型 (' + types.join('/') + ')', 'note') : 'note';\nif (!t || types.indexOf(t) < 0) t = 'note';\nconst body = text.split('\\n').map(function(l){ return '> ' + l; }).join('\\n');\nreturn '> [!' + t + ']\\n' + body;",
+      "category": "Callout",
+      "favorite": false
+    }
+  ],
+  "sequences": [
+    {
+      "name": "Markdown快速格式化",
+      "category": "Markdown格式化",
+      "favorite": true,
+      "steps": [
+        {
+          "actionName": "去除Markdown样式标记"
+        },
+        {
+          "actionName": "压缩多余空行"
+        }
+      ]
+    },
+    {
+      "name": "文本清理流水线",
+      "category": "Markdown格式化",
+      "favorite": false,
+      "steps": [
+        {
+          "actionName": "Markdown列表修正"
+        },
+        {
+          "actionName": "去除Markdown样式标记"
+        },
+        {
+          "actionName": "压缩多余空行"
+        }
+      ]
+    },
+    {
+      "name": "Callout-快速引用",
+      "category": "Callout",
+      "favorite": false,
+      "steps": [
+        {
+          "actionName": "Callout-note"
+        }
+      ]
+    }
+  ]
+}
