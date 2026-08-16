@@ -549,3 +549,19 @@
   gap: 8px;
   margin-top: 12px;
 }
+/* 从网址获取：输入框 + 按钮同行；提示默认网址用小字 */
+.text-batch-aiprompt-fetch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 4px;
+}
+.text-batch-aiprompt-url {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.text-batch-aiprompt-defaulturl {
+  margin: 0 0 8px;
+  font-size: var(--font-ui-smaller);
+  word-break: break-all;
+}
