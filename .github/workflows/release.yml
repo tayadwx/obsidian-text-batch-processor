@@ -1,15 +1,17 @@
 name: Release Obsidian 插件
 
-# 推送 main 分支后自动构建并发布 Release。
-# 版本号取自 manifest.json（如 1.1.0-beta1），无需手动打 tag。
-# 版本号含 "-"（如 1.1.0-beta1）自动标记为预发布（Pre-release）。
-# 支持重复 push：发布前先删除已存在的同名 Release / Tag，实现覆盖更新。
+# 守卫式自动发布：
+# 1) 仅当本次 push 改动了主文件（manifest.json / main.js / styles.css 之一）时才考虑发版；
+#    纯文档 / 说明改动（如只改 README）不会触发发布。
+# 2) 即便主文件改了，也只有当 manifest.json 中的版本号「高于」已存在的最新 Release 版本时才发布；
+#    版本号不高于（相等或更低）则跳过，避免重复 / 回退发版。
+# 版本号取自 manifest.json（如 1.1.0-beta1）；含 "-" 自动标记为预发布（Pre-release）。
 on:
   push:
     branches:
       - main
 
-# 允许工作流创建 / 上传 Release
+# 允许工作流创建 / 上传 Release；检出需要完整历史以对比改动
 permissions:
   contents: write
 
@@ -17,28 +19,94 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
     steps:
-      - name: 检出代码
+      - name: 检出代码（完整历史）
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: 设置 Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: 安装依赖并构建
+      - name: 检查主文件是否变更
+        id: changes
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
         run: |
-          npm ci
-          npm run build
+          ZERO="0000000000000000000000000000000000000000"
+          if [ "$BEFORE" = "$ZERO" ]; then
+            # 首次推送 / 新建分支等异常情形：直接视为主文件已变更，保证能发版
+            CHANGED="manifest.json
+          main.js
+          styles.css"
+          else
+            CHANGED=$(git diff --name-only "$BEFORE" "$AFTER" 2>/dev/null || git diff --name-only HEAD~1 HEAD)
+          fi
+          echo "本次变更文件："
+          echo "$CHANGED"
+          if echo "$CHANGED" | grep -qxE '^(manifest\.json|main\.js|styles\.css)$'; then
+            echo "main_changed=true" >> "$GITHUB_OUTPUT"
+            echo "→ 主文件有变更，继续判断是否发版"
+          else
+            echo "main_changed=false" >> "$GITHUB_OUTPUT"
+            echo "→ 未改动主文件，跳过发版"
+          fi
 
       - name: 读取版本号
         id: version
+        if: steps.changes.outputs.main_changed == 'true'
         run: |
           VERSION=$(node -p "require('./manifest.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
-          echo "本次发版版本：$VERSION"
+          echo "manifest 版本：$VERSION"
 
-      - name: 删除已存在的同名 Release / Tag（支持重复 push 覆盖）
+      - name: 获取已存在的最新 Release 版本
+        id: latest
+        if: steps.changes.outputs.main_changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LATEST=$(gh release list --limit 200 --json tagName --jq '.[].tagName' \
+            | sed 's/^v//' | sort -V | tail -1)
+          LATEST=${LATEST:-none}
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
+          echo "已存在最新 Release 版本：$LATEST"
+
+      - name: 比较版本（仅当新版本高于已存在版本时发布）
+        id: decide
+        if: steps.changes.outputs.main_changed == 'true'
+        run: |
+          node -e '
+            const cur = "${{ steps.version.outputs.version }}";
+            const prevRaw = "${{ steps.latest.outputs.latest }}";
+            const prev = (prevRaw === "none" || prevRaw === "") ? "0.0.0" : prevRaw;
+            function parse(v) {
+              const m = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.+-]+))?$/.exec(v);
+              if (!m) return null;
+              return { mj: +m[1], mn: +m[2], pt: +m[3], pre: m[4] || "" };
+            }
+            function cmp(a, b) {
+              if (a.mj !== b.mj) return a.mj - b.mj;
+              if (a.mn !== b.mn) return a.mn - b.mn;
+              if (a.pt !== b.pt) return a.pt - b.pt;
+              if (!a.pre && !b.pre) return 0;
+              if (!a.pre) return 1;   // 正式版高于任何预发布
+              if (!b.pre) return -1;
+              return a.pre < b.pre ? -1 : (a.pre > b.pre ? 1 : 0);
+            }
+            const A = parse(cur), B = parse(prev);
+            if (!A) { console.log("版本解析失败：" + cur); process.exit(1); }
+            const higher = B === null ? true : cmp(A, B) > 0;
+            require("fs").appendFileSync(process.env.GITHUB_OUTPUT,
+              "should_release=" + (higher ? "true" : "false") + "\n");
+            console.log("当前 " + cur + " / 已存在 " + prev + " => " + (higher ? "发布" : "跳过"));
+          '
+
+      - name: 删除已存在的同名 Release / Tag（支持覆盖发布）
+        if: steps.decide.outputs.should_release == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -47,7 +115,14 @@ jobs:
           git push --delete origin "$TAG" || true
           git tag -d "$TAG" || true
 
+      - name: 安装依赖并构建
+        if: steps.decide.outputs.should_release == 'true'
+        run: |
+          npm ci
+          npm run build
+
       - name: 发布 Release（测试版自动标记为预发布）
+        if: steps.decide.outputs.should_release == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
