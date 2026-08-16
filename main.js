@@ -1042,6 +1042,28 @@ var _ActionPicker = class _ActionPicker {
         e.stopPropagation();
         this.select(o);
       });
+      let sx = 0;
+      let sy = 0;
+      item.addEventListener(
+        "touchstart",
+        (e) => {
+          const t = e.touches[0];
+          sx = t.clientX;
+          sy = t.clientY;
+        },
+        { passive: true }
+      );
+      item.addEventListener(
+        "touchend",
+        (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const t = e.changedTouches[0];
+          if (Math.abs(t.clientX - sx) > 10 || Math.abs(t.clientY - sy) > 10) return;
+          this.select(o);
+        },
+        { passive: false }
+      );
       this.listEl.appendChild(item);
     });
   }
@@ -1124,8 +1146,8 @@ var TextProcessorSettingTab = class extends import_obsidian5.PluginSettingTab {
     super(app, plugin);
     // 本次编辑会话内「新增但尚未保存」的条目（不写入存储，刷新设置页即丢弃）
     this.draftNewItems = [];
-    // 当前区块的类别 datalist id（display 时按 动作/序列 区块分别重置，互不共享）
-    this.catListId = "";
+    // 类别选择器实例（每张动作/序列卡片一个，自绘下拉），display 重建前统一销毁避免监听器泄漏
+    this.cardPickers = [];
     // 刷新前记录各分组展开状态，重建后恢复。键为 `type|cat`，避免动作/序列同名分组互相覆盖
     this.groupOpenState = /* @__PURE__ */ new Map();
     // 刷新前记录每张「卡片」（动作/序列）的展开状态，重建后恢复。
@@ -1140,6 +1162,8 @@ var TextProcessorSettingTab = class extends import_obsidian5.PluginSettingTab {
   destroyAllPickers() {
     this.stepPickers.forEach((p) => p.destroy());
     this.stepPickers = [];
+    this.cardPickers.forEach((p) => p.destroy());
+    this.cardPickers = [];
     this.addPicker?.destroy();
     this.addPicker = void 0;
   }
@@ -1245,7 +1269,7 @@ var TextProcessorSettingTab = class extends import_obsidian5.PluginSettingTab {
     return { input, sync };
   }
   // ===== 卡片外壳（动作 / 序列共用）=====
-  renderCardShell(parent, item, isNew, opts) {
+  renderCardShell(parent, item, isNew, type, opts) {
     const details = parent.createEl("details", { cls: "text-batch-card" });
     const summary = details.createEl("summary", { cls: "text-batch-card-summary" });
     const titleSpan = summary.createEl("span", {
@@ -1290,12 +1314,15 @@ var TextProcessorSettingTab = class extends import_obsidian5.PluginSettingTab {
     }).input;
     const catField = row.createEl("div", { cls: "text-batch-field" });
     catField.createEl("label", { text: "\u7C7B\u522B", cls: "text-batch-field-label" });
-    const catInput = this.attachInput(catField, {
-      value: item.category ?? "",
+    const catPicker = new ActionPicker(catField, {
       placeholder: "\u8F93\u5165\u6216\u9009\u62E9\u7C7B\u522B\u2026",
-      datalistId: this.catListId,
-      onChange: opts.onCat
-    }).input;
+      value: item.category ?? "",
+      getOptions: () => this.collectCategories(type).map((c) => ({ id: c, name: c, category: "" })),
+      onSelect: (_id, name) => opts.onCat(name),
+      onInput: (name) => opts.onCat(name)
+    });
+    this.cardPickers.push(catPicker);
+    const catInput = catPicker;
     const setMeta = (s) => {
       metaSpan.textContent = s;
     };
@@ -1331,7 +1358,7 @@ var TextProcessorSettingTab = class extends import_obsidian5.PluginSettingTab {
   renderActionCard(parent, action, isNew) {
     const draft = { name: action.name, code: action.code, category: action.category ?? "" };
     let codeArea;
-    return this.renderCardShell(parent, action, isNew, {
+    return this.renderCardShell(parent, action, isNew, "action", {
       meta: `${action.code.split("\n").length} \u884C\u4EE3\u7801`,
       onName: (v) => {
         draft.name = v;
@@ -1361,7 +1388,7 @@ var TextProcessorSettingTab = class extends import_obsidian5.PluginSettingTab {
         draft.category = action.category ?? "";
         h.nameInput.value = action.name;
         codeArea.setValue(action.code);
-        h.catInput.value = draft.category;
+        h.catInput.setValue(draft.category);
         new import_obsidian5.Notice("\u5DF2\u53D6\u6D88\u6539\u52A8");
       },
       renderExtra: (body, api) => {
@@ -1389,7 +1416,7 @@ var TextProcessorSettingTab = class extends import_obsidian5.PluginSettingTab {
     };
     let stepsContainer;
     let renderSteps;
-    return this.renderCardShell(parent, seq, isNew, {
+    return this.renderCardShell(parent, seq, isNew, "sequence", {
       meta: `${seq.steps.length} \u4E2A\u6B65\u9AA4`,
       onName: (v) => {
         draft.name = v;
@@ -1436,7 +1463,7 @@ var TextProcessorSettingTab = class extends import_obsidian5.PluginSettingTab {
           originalActionId: s.actionId
         }));
         h.nameInput.value = seq.name;
-        h.catInput.value = draft.category;
+        h.catInput.setValue(draft.category);
         renderSteps();
         new import_obsidian5.Notice("\u5DF2\u53D6\u6D88\u6539\u52A8");
       },
@@ -1754,13 +1781,6 @@ var TextProcessorSettingTab = class extends import_obsidian5.PluginSettingTab {
       this.cardOpenState.set(`${type}|${id}`, el.open);
     });
     containerEl.empty();
-    const actionCatDl = containerEl.createEl("datalist");
-    actionCatDl.id = "text-batch-cat-list-action";
-    this.collectCategories("action").forEach((c) => {
-      const o = actionCatDl.createEl("option");
-      o.value = c;
-    });
-    this.catListId = actionCatDl.id;
     const actionItems = [
       ...this.plugin.settings.actions,
       ...this.draftNewItems.filter((i) => "code" in i)
@@ -1771,13 +1791,6 @@ var TextProcessorSettingTab = class extends import_obsidian5.PluginSettingTab {
       addLabel: "\u65B0\u589E\u52A8\u4F5C",
       renderCard: (p, it, isNew) => this.renderActionCard(p, it, isNew)
     });
-    const seqCatDl = containerEl.createEl("datalist");
-    seqCatDl.id = "text-batch-cat-list-seq";
-    this.collectCategories("sequence").forEach((c) => {
-      const o = seqCatDl.createEl("option");
-      o.value = c;
-    });
-    this.catListId = seqCatDl.id;
     const seqItems = [
       ...this.plugin.settings.sequences,
       ...this.draftNewItems.filter((i) => !("code" in i))

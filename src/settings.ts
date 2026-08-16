@@ -22,7 +22,7 @@ import { ActionPicker } from './action-picker';
 type ListItem = UserAction | Sequence;
 interface CardHandle {
   nameInput: HTMLInputElement;
-  catInput: HTMLInputElement;
+  catInput: ActionPicker;
   setMeta: (s: string) => void;
 }
 
@@ -34,8 +34,8 @@ export class TextProcessorSettingTab extends PluginSettingTab {
   private pendingOpenId?: string;
   // 保存/取消后，display() 重建时强制收起该卡片（值为条目 id），实现「操作后关闭卡片」
   private pendingCloseId?: string;
-  // 当前区块的类别 datalist id（display 时按 动作/序列 区块分别重置，互不共享）
-  private catListId = '';
+  // 类别选择器实例（每张动作/序列卡片一个，自绘下拉），display 重建前统一销毁避免监听器泄漏
+  private cardPickers: ActionPicker[] = [];
   // 刷新前记录各分组展开状态，重建后恢复。键为 `type|cat`，避免动作/序列同名分组互相覆盖
   private groupOpenState = new Map<string, boolean>();
   // 刷新前记录每张「卡片」（动作/序列）的展开状态，重建后恢复。
@@ -49,6 +49,8 @@ export class TextProcessorSettingTab extends PluginSettingTab {
   private destroyAllPickers() {
     this.stepPickers.forEach((p) => p.destroy());
     this.stepPickers = [];
+    this.cardPickers.forEach((p) => p.destroy());
+    this.cardPickers = [];
     this.addPicker?.destroy();
     this.addPicker = undefined;
   }
@@ -193,6 +195,7 @@ export class TextProcessorSettingTab extends PluginSettingTab {
     parent: HTMLElement,
     item: ListItem,
     isNew: boolean,
+    type: 'action' | 'sequence',
     opts: {
       meta: string;
       onName: (v: string) => void;
@@ -255,12 +258,19 @@ export class TextProcessorSettingTab extends PluginSettingTab {
 
     const catField = row.createEl('div', { cls: 'text-batch-field' });
     catField.createEl('label', { text: '类别', cls: 'text-batch-field-label' });
-    const catInput = this.attachInput(catField, {
-      value: (item as { category?: string }).category ?? '',
+    // 类别选择改用自绘下拉（与动作选择器同一套 ActionPicker）：
+    // 原生 <datalist> 在 iOS 仅显示键盘上少量候选项、安卓选择不可靠，移动端体验差。
+    // 输入即过滤已有类别、点选即填入、也可自由输入新类别。
+    const catPicker = new ActionPicker(catField, {
       placeholder: '输入或选择类别…',
-      datalistId: this.catListId,
-      onChange: opts.onCat,
-    }).input;
+      value: (item as { category?: string }).category ?? '',
+      getOptions: () =>
+        this.collectCategories(type).map((c) => ({ id: c, name: c, category: '' })),
+      onSelect: (_id, name) => opts.onCat(name),
+      onInput: (name) => opts.onCat(name),
+    });
+    this.cardPickers.push(catPicker);
+    const catInput = catPicker;
 
     const setMeta = (s: string) => {
       metaSpan.textContent = s;
@@ -303,7 +313,7 @@ export class TextProcessorSettingTab extends PluginSettingTab {
   private renderActionCard(parent: HTMLElement, action: UserAction, isNew: boolean): HTMLElement {
     const draft = { name: action.name, code: action.code, category: action.category ?? '' };
     let codeArea!: TextAreaComponent;
-    return this.renderCardShell(parent, action, isNew, {
+    return this.renderCardShell(parent, action, isNew, 'action', {
       meta: `${action.code.split('\n').length} 行代码`,
       onName: (v) => {
         draft.name = v;
@@ -336,7 +346,7 @@ export class TextProcessorSettingTab extends PluginSettingTab {
         draft.category = action.category ?? '';
         h.nameInput.value = action.name;
         codeArea.setValue(action.code);
-        h.catInput.value = draft.category;
+        h.catInput.setValue(draft.category);
         new Notice('已取消改动');
       },
       renderExtra: (body, api) => {
@@ -371,7 +381,7 @@ export class TextProcessorSettingTab extends PluginSettingTab {
     let stepsContainer!: HTMLElement;
     let renderSteps!: () => void;
 
-    return this.renderCardShell(parent, seq, isNew, {
+    return this.renderCardShell(parent, seq, isNew, 'sequence', {
       meta: `${seq.steps.length} 个步骤`,
       onName: (v) => {
         draft.name = v;
@@ -418,7 +428,7 @@ export class TextProcessorSettingTab extends PluginSettingTab {
           originalActionId: s.actionId,
         }));
         h.nameInput.value = seq.name;
-        h.catInput.value = draft.category;
+        h.catInput.setValue(draft.category);
         renderSteps();
         new Notice('已取消改动');
       },
@@ -794,14 +804,7 @@ export class TextProcessorSettingTab extends PluginSettingTab {
     });
     containerEl.empty();
 
-    // 动作类别 datalist：仅含动作自身出现过的类别，与序列相互独立
-    const actionCatDl = containerEl.createEl('datalist');
-    actionCatDl.id = 'text-batch-cat-list-action';
-    this.collectCategories('action').forEach((c) => {
-      const o = actionCatDl.createEl('option');
-      o.value = c;
-    });
-    this.catListId = actionCatDl.id;
+    // 类别下拉现已改用自绘 ActionPicker（见 renderCardShell），不再依赖原生 datalist。
 
     // 动作管理：正式条目 + 未保存草稿
     const actionItems: ListItem[] = [
@@ -814,15 +817,6 @@ export class TextProcessorSettingTab extends PluginSettingTab {
       addLabel: '新增动作',
       renderCard: (p, it, isNew) => this.renderActionCard(p, it as UserAction, isNew),
     });
-
-    // 序列类别 datalist：仅含序列自身出现过的类别，与动作相互独立
-    const seqCatDl = containerEl.createEl('datalist');
-    seqCatDl.id = 'text-batch-cat-list-seq';
-    this.collectCategories('sequence').forEach((c) => {
-      const o = seqCatDl.createEl('option');
-      o.value = c;
-    });
-    this.catListId = seqCatDl.id;
 
     // 序列构建器
     const seqItems: ListItem[] = [

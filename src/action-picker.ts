@@ -240,12 +240,38 @@ export class ActionPicker {
         this.activeIdx = i;
         this.renderItems();
       });
-      // 使用 mousedown 而非 click：防止输入框先 blur 导致列表关闭、选择失效
+      // 桌面端用 mousedown：在输入框 blur 关闭列表之前就完成选择（preventDefault 阻止失焦）
       item.addEventListener('mousedown', (e) => {
         e.preventDefault();
         e.stopPropagation();
         this.select(o);
       });
+      // 移动端（iOS / Android）用 touchend：iOS Safari 对 <div> 的 mousedown 模拟不可靠，
+      // 点按只触发 CSS :hover 高亮而不派发 mousedown/click，导致 select 不执行。
+      // 显式 touchend + preventDefault 既能可靠触发选择，又抑制合成 mouse/click 避免重复；
+      // 仅在几乎未移动时判定为「点按」，移动超过 10px 视为滚动列表、不触发选择。
+      let sx = 0;
+      let sy = 0;
+      item.addEventListener(
+        'touchstart',
+        (e) => {
+          const t = e.touches[0];
+          sx = t.clientX;
+          sy = t.clientY;
+        },
+        { passive: true }
+      );
+      item.addEventListener(
+        'touchend',
+        (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const t = e.changedTouches[0];
+          if (Math.abs(t.clientX - sx) > 10 || Math.abs(t.clientY - sy) > 10) return;
+          this.select(o);
+        },
+        { passive: false }
+      );
       this.listEl.appendChild(item);
     });
   }
