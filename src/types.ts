@@ -32,6 +32,8 @@ export interface Sequence {
 export interface PluginSettings {
   actions: UserAction[];
   sequences: Sequence[];
+  // AI 提示词：用于让网页版 Chat AI 生成可导入配置 JSON 的提示词，可在设置页编辑/恢复默认。
+  aiPrompt?: string;
 }
 
 // 默认内置的示范动作与序列，首次安装时自动写入。

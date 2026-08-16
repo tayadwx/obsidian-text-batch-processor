@@ -1,0 +1,58 @@
+{
+  "$schema": "text-batch-processor-pack",
+  "version": 1,
+  "actions": [
+    {
+      "name": "清除Callout样式",
+      "category": "Callout分支示例",
+      "favorite": false,
+      "code": "// 清除文本里 callout 的视觉包装（callout 在开头或中间都行），保留正文内容与所有空行。\n// 只匹配带 [!类型] 头的块，避免误伤普通引用(>)。\nreturn text.replace(\n  /(^[ \\t]*>?[ \\t]*\\[![\\w-]+\\]-?[^\\n]*\\n)((?:^[ \\t]*>[^\\n]*\\n?)*)/gm,\n  (_, _h, body) => body.replace(/^[ \\t]*>?[ \\t]?/gm, '')\n);"
+    },
+    {
+      "name": "清除引用",
+      "category": "Callout分支示例",
+      "favorite": false,
+      "code": "// 清除文本里普通引用(>) 的视觉包装，保留正文内容。\n// 带 [!类型] 头的 callout 块由「清除Callout样式」先行处理，这里跳过其头部行，\n// 仅剥离其余以 > 开头的引用行前缀。逐行处理，原样保留所有空行。\nreturn text.split('\\n').map(line => {\n  if (/^[ \\t]*>?[ \\t]*\\[![\\w-]+\\]/.test(line)) return line; // 跳过 callout 头部\n  return line.replace(/^[ \\t]*>[ \\t]?/, '');\n}).join('\\n');"
+    },
+    {
+      "name": "追加Callout选项标记",
+      "category": "Callout分支示例",
+      "favorite": false,
+      "code": "// 覆盖式：先清掉已有开始标记与选项标记，再在开头加开始标记、末尾加选项标记\nconst startMark = '【TBPX29待处理文本开始，请设置选项并后执行】';\nconst optMark = '【TBPX29本段文字用于让您选择你想要设置的Callout类型，请在最后输入想要的类型，1=note，2=note，3=abstract，4=info，5=todo，6=tip，7=success，8=question，9=warning，10=failure，11=danger，12=bug，13=example，14=quote，您需要的类型是=】';\nlet t = text\n  .replace(/\\n?【TBPX29待处理文本开始[^\\n】]*】\\n?/g, '')\n  .replace(/\\n?【TBPX29本段文字用于让您选择[^】]*您需要的类型是=[^\\n】]*】\\n?/g, '');\nt = t.replace(/^\\n+/, '').replace(/\\n+$/, '');\nreturn startMark + '\\n' + t + '\\n' + optMark;"
+    },
+    {
+      "name": "按选项设置Callout类型",
+      "category": "Callout分支示例",
+      "favorite": false,
+      "code": "function resolveType(opt) {\n  const map = {\n    '1':'note','2':'note','3':'abstract','4':'info','5':'todo','6':'tip',\n    '7':'success','8':'question','9':'warning','10':'failure','11':'danger',\n    '12':'bug','13':'example','14':'quote'\n  };\n  if (map[opt]) return map[opt];\n  const known = ['note','abstract','info','todo','tip','success','question','warning','failure','danger','bug','example','quote'];\n  return known.includes(opt) ? opt : null;\n}\n// 守卫：没有开始标记 → 未正确从标记处选择，原样返回、不执行\nif (text.indexOf('【TBPX29待处理文本开始') === -1) return text;\n// 全局收集选项标记，取第一个有效选项\nconst all = [...text.matchAll(/【TBPX29本段文字用于让您选择[^】]*您需要的类型是=([^\\n】]*)】/g)];\nlet type = null;\nfor (const m of all) {\n  const t = resolveType((m[1] || '').trim());\n  if (t) { type = t; break; }\n}\n// 有开始标记但忘了/未正确输入选项 → 原样返回文本（保留开始标记与选项标记），交由用户补全\nif (!type) return text;\n// 清除所有临时标记（开始标记 + 选项标记），把正文包成 callout\nlet body = text\n  .replace(/\\n?【TBPX29待处理文本开始[^\\n】]*】\\n?/g, '')\n  .replace(/\\n?【TBPX29本段文字用于让您选择[^】]*您需要的类型是=[^\\n】]*】\\n?/g, '');\nbody = body.replace(/^\\n+/, '').replace(/\\n+$/, '');\n// 组装 callout：每行加 \"> \" 前缀\nconst lines = body.split('\\n').map(l => '> ' + l);\nreturn '> [!' + type + ']\\n' + lines.join('\\n');"
+    }
+  ],
+  "sequences": [
+    {
+      "name": "设置Callout样式-准备",
+      "category": "Callout分支示例",
+      "favorite": false,
+      "steps": [
+        {
+          "actionName": "清除Callout样式"
+        },
+        {
+          "actionName": "清除引用"
+        },
+        {
+          "actionName": "追加Callout选项标记"
+        }
+      ]
+    },
+    {
+      "name": "设置Callout样式-执行",
+      "category": "Callout分支示例",
+      "favorite": false,
+      "steps": [
+        {
+          "actionName": "按选项设置Callout类型"
+        }
+      ]
+    }
+  ]
+}

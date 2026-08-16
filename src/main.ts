@@ -3,6 +3,7 @@ import { PluginSettings, UserAction, Sequence, DEFAULT_SETTINGS } from './types'
 import { runAction, runSequence } from './actions';
 import { TextProcessorSettingTab } from './settings';
 import { PickerModal } from './picker';
+import { DEFAULT_AI_PROMPT } from './defaultAiPrompt';
 
 export default class TextProcessorPlugin extends Plugin {
   settings: PluginSettings;
@@ -26,6 +27,10 @@ export default class TextProcessorPlugin extends Plugin {
     this.settings = data
       ? { ...DEFAULT_SETTINGS, ...data }
       : JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+    // AI 提示词缺失或为空时回退到内置预设（首次安装 / 旧配置升级场景）
+    if (!this.settings.aiPrompt || !this.settings.aiPrompt.trim()) {
+      this.settings.aiPrompt = DEFAULT_AI_PROMPT;
+    }
   }
 
   async saveSettings() {

@@ -528,3 +528,24 @@
 .text-batch-toolbar-sort:hover {
   background: var(--interactive-hover);
 }
+
+/* ===== AI 提示词编辑弹窗 ===== */
+/* 弹窗整体允许纵向滚动；文本域宽度撑满、等宽字体、可拖动调整高度 */
+.text-batch-aiprompt-wrap {
+  margin: 8px 0;
+}
+.text-batch-aiprompt {
+  width: 100%;
+  min-height: 320px;
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-small);
+  line-height: 1.5;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.text-batch-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}

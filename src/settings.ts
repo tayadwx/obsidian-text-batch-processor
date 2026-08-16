@@ -13,6 +13,8 @@ import { ImportModal } from './import-modal';
 import { downloadPack, exportPackText, normalizeCategory } from './io';
 import { UserAction, Sequence } from './types';
 import { ActionPicker } from './action-picker';
+import { AiPromptModal } from './ai-prompt-modal';
+import { DEFAULT_AI_PROMPT } from './defaultAiPrompt';
 
 // 设置页：动作管理 + 序列构建器。
 // 动作/序列均「按类别分组」展示，类别默认收拢；组内条目为可折叠卡片，支持筛选与排序。
@@ -869,6 +871,45 @@ export class TextProcessorSettingTab extends PluginSettingTab {
               '确认清除'
             ).open();
           })
+      );
+
+    // ===== AI 提示词 =====
+    containerEl.createEl('h2', { text: 'AI 提示词', cls: 'text-batch-section-title' });
+    new Setting(containerEl)
+      .setName('编辑 AI 提示词')
+      .setDesc('打开编辑器，里面是预设 / 你已保存的提示词。可手动修改并保存以便长期使用，也可一键恢复默认。')
+      .addButton((btn) =>
+        btn.setButtonText('编辑 AI 提示词').onClick(() => {
+          new AiPromptModal(this.app, this.plugin).open();
+        })
+      );
+
+    new Setting(containerEl)
+      .setName('一键复制 AI 提示词')
+      .setDesc('把当前 AI 提示词复制到剪贴板，直接粘贴到任意网页版 Chat AI 使用。')
+      .addButton((btn) =>
+        btn.setButtonText('复制 AI 提示词').onClick(async () => {
+          const txt = this.plugin.settings.aiPrompt ?? DEFAULT_AI_PROMPT;
+          try {
+            await navigator.clipboard.writeText(txt);
+            new Notice('已复制 AI 提示词到剪贴板');
+          } catch (e) {
+            // 桌面端 clipboard API 可能受权限/非安全上下文限制，回退到 textarea 选中复制
+            const ta = document.createElement('textarea');
+            ta.value = txt;
+            ta.style.position = 'fixed';
+            ta.style.top = '-1000px';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+              document.execCommand('copy');
+              new Notice('已复制 AI 提示词到剪贴板');
+            } catch (e2) {
+              new Notice('复制失败：' + (e2 as Error).message);
+            }
+            document.body.removeChild(ta);
+          }
+        })
       );
 
     // 新增条目后：自动展开所在分组 + 编辑卡片，并把新卡片滚动到可见区域
