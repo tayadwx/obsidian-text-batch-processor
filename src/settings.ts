@@ -432,7 +432,7 @@ export class TextProcessorSettingTab extends PluginSettingTab {
           stepsContainer.empty();
           draft.steps.forEach((step, stepIndex) => {
             const stepSetting = new Setting(stepsContainer).setName(`步骤 ${stepIndex + 1}`);
-            const stepPicker = new ActionPicker(stepSetting.controlEl, {
+            const stepPicker = new ActionPicker(stepSetting.settingEl, {
               value: this.actionNameById(step.actionId),
               placeholder: '输入或选择动作…',
               getOptions: () =>
@@ -504,7 +504,7 @@ export class TextProcessorSettingTab extends PluginSettingTab {
 
         const addSetting = new Setting(body).setName('新步骤');
         addSetting.settingEl.addClass('text-batch-step-add-row');
-        this.addPicker = new ActionPicker(addSetting.controlEl, {
+        this.addPicker = new ActionPicker(addSetting.settingEl, {
           placeholder: '输入或选择动作…',
           getOptions: () =>
             this.plugin.settings.actions.map((a) => ({

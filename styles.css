@@ -14,9 +14,9 @@
   resize: vertical;
 }
 
-/* ===== 可复用输入框：原生 datalist + 框内左侧清空按钮 ===== */
-/* 外层 .text-batch-input 是定位容器；内层 .text-batch-input-el 才是真正的 input。
-   下拉候选由浏览器原生 <input list> 提供（点击输入框聚焦即弹出），不再使用自定义下拉。 */
+/* ===== 可复用输入框：自绘动作下拉 + 框内右侧清空按钮 ===== */
+/* 外层 .text-batch-input 是定位容器（position:relative）；内层 .text-batch-input-el
+   才是真正的 input。点击输入框聚焦即弹出自绘下拉（见 ActionPicker），不再用原生 datalist。 */
 .text-batch-input {
   position: relative;
   display: inline-flex;
@@ -42,50 +42,13 @@
 .text-batch-input-el:focus {
   border-color: var(--interactive-accent);
 }
-/* 清空按钮（✕）：固定在输入框右侧，远离原生 datalist 箭头 */
+/* 清空按钮（✕）：固定在输入框右侧，点击清空并重新展开列表 */
 .text-batch-clear {
   position: absolute;
-  right: 4px;
+  right: 6px;
   top: 50%;
   transform: translateY(-50%);
   display: none;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 16px;
-  border: none;
-  background: transparent;
-  color: var(--text-faint);
-  cursor: pointer;
-  padding: 0;
-  font-size: 11px;
-  line-height: 1;
-  z-index: 2;
-}
-.text-batch-clear:hover {
-  color: var(--text-normal);
-}
-/* 带下拉候选的输入框：清空按钮进一步右移，给原生 datalist 箭头让出空间 */
-.text-batch-input-has-list .text-batch-input-el {
-  padding-right: 46px;
-}
-.text-batch-input-has-list .text-batch-clear {
-  right: 24px;
-}
-/* 动作选择器专用：清空按钮再向左移动约 16px，避免被自定义下拉按钮遮挡 */
-.text-batch-picker .text-batch-input-el {
-  padding-right: 58px;
-}
-.text-batch-picker .text-batch-clear {
-  right: 40px;
-}
-/* 自定义下拉的触发按钮（chevron），位于输入框最右侧，点击展开/收起列表 */
-.text-batch-dropdown-btn {
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 16px;
@@ -95,20 +58,31 @@
   color: var(--text-faint);
   cursor: pointer;
   padding: 0;
+  font-size: 12px;
+  line-height: 1;
   z-index: 2;
 }
-.text-batch-dropdown-btn:hover {
+.text-batch-clear:hover {
   color: var(--text-normal);
 }
-.text-batch-dropdown-btn svg {
-  width: 14px;
-  height: 14px;
+/* 动作选择器专用：去掉了自定义下拉箭头，输入框右侧只给清空按钮留出空间 */
+.text-batch-picker .text-batch-input-el {
+  padding-right: 30px;
+}
+.text-batch-picker .text-batch-clear {
+  right: 6px;
+}
+/* 使用原生 datalist 的输入框（如动作类别）：清空按钮左移，给浏览器原生下拉箭头让出空间 */
+.text-batch-input-has-list .text-batch-input-el {
+  padding-right: 46px;
+}
+.text-batch-input-has-list .text-batch-clear {
+  right: 24px;
 }
 
 /* ===== 自定义动作下拉列表（替代原生 datalist，可滚动、键盘高亮可见）===== */
-/* 挂在设置 modal 容器(.modal-container)内，position:absolute 跟随输入框（JS 实时计算相对坐标）。
-   这样不受 Obsidian 主窗口 transform 影响而错位，也不会被设置页内部滚动容器裁剪。
-   z-index 在 modal 容器层级内保持最高，确保浮在最上层。 */
+/* 挂在输入框容器 .text-batch-input（position:relative）内，position:absolute 紧贴输入框下方，
+   偏移父级即输入框容器，不受任何祖先 transform 影响而错位，也不会被设置页滚动容器裁剪。 */
 .text-batch-picker-list {
   position: absolute;
   z-index: 100000;
@@ -157,10 +131,11 @@
   color: var(--text-normal);
 }
 
-/* 序列步骤行 + 新步骤行：标签、输入框、按钮严格对齐 */
+/* 序列步骤行 + 新步骤行：桌面端「步骤 N + 上移/下移/删除 + 动作选择器」一行显示。
+   动作选择器(.text-batch-input)是 .setting-item 的直接子节点（见 settings.ts，
+   挂在 settingEl 上），与标签、按钮平级，便于桌面一行 / 移动端两行布局。 */
 .text-batch-steps .setting-item,
 .text-batch-step-add-row {
-  flex-wrap: nowrap;
   align-items: center;
   gap: 4px;
 }
@@ -171,26 +146,20 @@
   margin-right: 0;
   white-space: nowrap;
 }
-/* 统一控制区为 1fr + 3 个等宽按钮槽，确保「步骤 N」与「新步骤」输入框等宽，
-   且「新步骤」的添加按钮与「步骤 N」的上移按钮左对齐 */
-.text-batch-steps .setting-item-control,
-.text-batch-step-add-row .setting-item-control {
-  display: grid;
-  grid-template-columns: 1fr 28px 28px 28px;
-  gap: 4px;
+/* 上移/下移/删除按钮区：保持自然宽度，不占满整行 */
+.text-batch-steps .setting-item-control {
+  display: flex;
   align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+/* 动作选择器占满剩余宽度（桌面端与第一行其它元素同行显示） */
+.text-batch-steps .setting-item > .text-batch-input,
+.text-batch-step-add-row > .text-batch-input {
   flex: 1 1 auto;
-}
-.text-batch-steps .setting-item-control > *,
-.text-batch-step-add-row .setting-item-control > * {
   min-width: 0;
 }
-.text-batch-steps .text-batch-input,
-.text-batch-step-add-row .text-batch-input {
-  width: 100%;
-  min-width: 0;
-}
-/* 步骤行 + 新步骤行内的 Obsidian 按钮统一为 28×28，贴合网格槽位（排除清空按钮） */
+/* 步骤行 + 新步骤行内的 Obsidian 按钮统一为 28×28（桌面端小按钮，排除清空按钮） */
 .text-batch-steps .setting-item-control button:not(.text-batch-clear),
 .text-batch-step-add-row .setting-item-control button:not(.text-batch-clear) {
   width: 28px;
@@ -200,9 +169,73 @@
   align-items: center;
   justify-content: center;
 }
-/* 新步骤行的「添加」按钮放在第 2 列（与上移按钮左对齐） */
-.text-batch-step-add-row .text-batch-step-btn {
-  grid-column: 2;
+
+/* ===== 移动端布局优化（Obsidian 在移动端给 body/app 加 .is-mobile）===== */
+/* 步骤行：第一行「步骤 N + 上移/下移/删除」，第二行「动作选择器」占满整行 */
+.is-mobile .text-batch-steps .setting-item,
+.is-mobile .text-batch-step-add-row {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}
+.is-mobile .text-batch-steps .setting-item-info,
+.is-mobile .text-batch-step-add-row .setting-item-info {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.is-mobile .text-batch-steps .setting-item-control {
+  flex: 0 0 auto;
+}
+/* 动作选择器换行到第二行并占满整行 */
+.is-mobile .text-batch-steps .setting-item > .text-batch-input,
+.is-mobile .text-batch-step-add-row > .text-batch-input {
+  flex: 1 0 100%;
+}
+/* 移动端按钮放大到触摸友好尺寸 */
+.is-mobile .text-batch-steps .setting-item-control button:not(.text-batch-clear),
+.is-mobile .text-batch-step-add-row .setting-item-control button:not(.text-batch-clear) {
+  width: 36px;
+  height: 36px;
+}
+/* 移动端清空按钮也放大，方便触摸 */
+.is-mobile .text-batch-clear {
+  width: 22px;
+  height: 22px;
+  font-size: 14px;
+  right: 6px;
+}
+
+/* 视口兜底：即使个别主题/版本未给祖先加 .is-mobile，窄屏（≤600px）也走移动布局 */
+@media (max-width: 600px) {
+  .text-batch-steps .setting-item,
+  .text-batch-step-add-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+  }
+  .text-batch-steps .setting-item-info,
+  .text-batch-step-add-row .setting-item-info {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+  .text-batch-steps .setting-item-control {
+    flex: 0 0 auto;
+  }
+  .text-batch-steps .setting-item > .text-batch-input,
+  .text-batch-step-add-row > .text-batch-input {
+    flex: 1 0 100%;
+  }
+  .text-batch-steps .setting-item-control button:not(.text-batch-clear),
+  .text-batch-step-add-row .setting-item-control button:not(.text-batch-clear) {
+    width: 36px;
+    height: 36px;
+  }
+  .text-batch-clear {
+    width: 22px;
+    height: 22px;
+    font-size: 14px;
+    right: 6px;
+  }
 }
 
 /* 页面一级标题：动作 / 序列 / 导入导出 */

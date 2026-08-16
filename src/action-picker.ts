@@ -1,5 +1,3 @@
-import { setIcon } from 'obsidian';
-
 // 动作选择器：自绘可滚动下拉，替代原生 <datalist>。
 // 原生 datalist 的弹层高度/滚动/键盘高亮滚动均由浏览器托管、不可定制，
 // 列表过长时上下键会选到可视区外而看不到高亮项、列表也不滚动。
@@ -83,7 +81,7 @@ export class ActionPicker {
   constructor(parent: HTMLElement, opts: ActionPickerOpts) {
     this.opts = opts;
     this.wrapper = parent.createEl('div', {
-      cls: 'text-batch-input text-batch-input-has-list text-batch-picker',
+      cls: 'text-batch-input text-batch-picker',
     });
     this.input = this.wrapper.createEl('input', { type: 'text', cls: 'text-batch-input-el' });
     this.input.value = opts.value ?? '';
@@ -104,20 +102,6 @@ export class ActionPicker {
       this.opts.onInput?.('');
       this.input.focus();
       this.openList();
-    });
-
-    // 下拉触发按钮
-    const chevron = this.wrapper.createEl('button', {
-      type: 'button',
-      cls: 'text-batch-dropdown-btn',
-      attr: { 'aria-label': '展开动作列表' },
-    });
-    setIcon(chevron, 'chevron-down');
-    chevron.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (this.open) this.closeList();
-      else this.openList();
     });
 
     this.input.addEventListener('focus', () => {

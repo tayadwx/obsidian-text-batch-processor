@@ -26,7 +26,7 @@ __export(main_exports, {
   default: () => TextProcessorPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian8 = require("obsidian");
+var import_obsidian7 = require("obsidian");
 
 // src/types.ts
 var DEFAULT_SETTINGS = {
@@ -83,7 +83,7 @@ function runSequence(sequence, actionsById, text) {
 }
 
 // src/settings.ts
-var import_obsidian6 = require("obsidian");
+var import_obsidian5 = require("obsidian");
 
 // src/delete-confirm.ts
 var import_obsidian = require("obsidian");
@@ -863,7 +863,6 @@ var ImportModal = class extends import_obsidian4.Modal {
 };
 
 // src/action-picker.ts
-var import_obsidian5 = require("obsidian");
 var _ActionPicker = class _ActionPicker {
   constructor(parent, opts) {
     this.filtered = [];
@@ -894,7 +893,7 @@ var _ActionPicker = class _ActionPicker {
     };
     this.opts = opts;
     this.wrapper = parent.createEl("div", {
-      cls: "text-batch-input text-batch-input-has-list text-batch-picker"
+      cls: "text-batch-input text-batch-picker"
     });
     this.input = this.wrapper.createEl("input", { type: "text", cls: "text-batch-input-el" });
     this.input.value = opts.value ?? "";
@@ -913,18 +912,6 @@ var _ActionPicker = class _ActionPicker {
       this.opts.onInput?.("");
       this.input.focus();
       this.openList();
-    });
-    const chevron = this.wrapper.createEl("button", {
-      type: "button",
-      cls: "text-batch-dropdown-btn",
-      attr: { "aria-label": "\u5C55\u5F00\u52A8\u4F5C\u5217\u8868" }
-    });
-    (0, import_obsidian5.setIcon)(chevron, "chevron-down");
-    chevron.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (this.open) this.closeList();
-      else this.openList();
     });
     this.input.addEventListener("focus", () => {
       if (!this.open) this.openList();
@@ -1132,7 +1119,7 @@ _ActionPicker.active = null;
 var ActionPicker = _ActionPicker;
 
 // src/settings.ts
-var TextProcessorSettingTab = class extends import_obsidian6.PluginSettingTab {
+var TextProcessorSettingTab = class extends import_obsidian5.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     // 本次编辑会话内「新增但尚未保存」的条目（不写入存储，刷新设置页即丢弃）
@@ -1267,7 +1254,7 @@ var TextProcessorSettingTab = class extends import_obsidian6.PluginSettingTab {
     });
     const metaSpan = summary.createEl("span", { cls: "text-batch-card-meta", text: opts.meta });
     const favBtn = summary.createEl("button", { cls: "text-batch-card-btn text-batch-fav" });
-    (0, import_obsidian6.setIcon)(favBtn, "star");
+    (0, import_obsidian5.setIcon)(favBtn, "star");
     favBtn.title = item.favorite ? "\u53D6\u6D88\u5E38\u7528" : "\u8BBE\u4E3A\u5E38\u7528";
     favBtn.classList.toggle("text-batch-fav-on", item.favorite);
     favBtn.addEventListener("click", (e) => {
@@ -1280,7 +1267,7 @@ var TextProcessorSettingTab = class extends import_obsidian6.PluginSettingTab {
       titleSpan.textContent = (item.favorite ? "\u2605 " : "") + item.name;
     });
     const delBtn = summary.createEl("button", { cls: "text-batch-card-btn text-batch-danger" });
-    (0, import_obsidian6.setIcon)(delBtn, "trash");
+    (0, import_obsidian5.setIcon)(delBtn, "trash");
     delBtn.setAttribute("aria-label", "\u5220\u9664");
     delBtn.addEventListener("click", (e) => {
       e.preventDefault();
@@ -1315,21 +1302,21 @@ var TextProcessorSettingTab = class extends import_obsidian6.PluginSettingTab {
     const save = () => {
       const err = opts.onSave();
       if (err) {
-        new import_obsidian6.Notice(err);
+        new import_obsidian5.Notice(err);
         return;
       }
       if (isNew) this.commitNewItem(item);
       else this.plugin.saveSettings();
       this.pendingCloseId = item.id;
       this.display();
-      new import_obsidian6.Notice("\u5DF2\u4FDD\u5B58");
+      new import_obsidian5.Notice("\u5DF2\u4FDD\u5B58");
     };
     const cancel = () => {
       if (isNew) {
         this.discardNewItem(item);
         this.pendingCloseId = item.id;
         this.display();
-        new import_obsidian6.Notice("\u5DF2\u653E\u5F03\u65B0\u589E");
+        new import_obsidian5.Notice("\u5DF2\u653E\u5F03\u65B0\u589E");
       } else {
         opts.onCancel(handle);
         this.pendingCloseId = item.id;
@@ -1375,7 +1362,7 @@ var TextProcessorSettingTab = class extends import_obsidian6.PluginSettingTab {
         h.nameInput.value = action.name;
         codeArea.setValue(action.code);
         h.catInput.value = draft.category;
-        new import_obsidian6.Notice("\u5DF2\u53D6\u6D88\u6539\u52A8");
+        new import_obsidian5.Notice("\u5DF2\u53D6\u6D88\u6539\u52A8");
       },
       renderExtra: (body, api) => {
         const codeHead = body.createEl("div", { cls: "text-batch-code-head" });
@@ -1384,7 +1371,7 @@ var TextProcessorSettingTab = class extends import_obsidian6.PluginSettingTab {
         codeBtns.createEl("button", { cls: "mod-cta", text: "\u4FDD\u5B58" }).addEventListener("click", api.save);
         codeBtns.createEl("button", { text: "\u53D6\u6D88" }).addEventListener("click", api.cancel);
         const codeWrap = body.createEl("div", { cls: "text-batch-code-wrap" });
-        codeArea = new import_obsidian6.TextAreaComponent(codeWrap);
+        codeArea = new import_obsidian5.TextAreaComponent(codeWrap);
         codeArea.setValue(action.code).onChange((v) => {
           draft.code = v;
         });
@@ -1451,7 +1438,7 @@ var TextProcessorSettingTab = class extends import_obsidian6.PluginSettingTab {
         h.nameInput.value = seq.name;
         h.catInput.value = draft.category;
         renderSteps();
-        new import_obsidian6.Notice("\u5DF2\u53D6\u6D88\u6539\u52A8");
+        new import_obsidian5.Notice("\u5DF2\u53D6\u6D88\u6539\u52A8");
       },
       renderExtra: (body, api) => {
         stepsContainer = body.createEl("div", { cls: "text-batch-steps" });
@@ -1460,8 +1447,8 @@ var TextProcessorSettingTab = class extends import_obsidian6.PluginSettingTab {
           this.stepPickers = [];
           stepsContainer.empty();
           draft.steps.forEach((step, stepIndex) => {
-            const stepSetting = new import_obsidian6.Setting(stepsContainer).setName(`\u6B65\u9AA4 ${stepIndex + 1}`);
-            const stepPicker = new ActionPicker(stepSetting.controlEl, {
+            const stepSetting = new import_obsidian5.Setting(stepsContainer).setName(`\u6B65\u9AA4 ${stepIndex + 1}`);
+            const stepPicker = new ActionPicker(stepSetting.settingEl, {
               value: this.actionNameById(step.actionId),
               placeholder: "\u8F93\u5165\u6216\u9009\u62E9\u52A8\u4F5C\u2026",
               getOptions: () => this.plugin.settings.actions.map((a) => ({
@@ -1481,7 +1468,7 @@ var TextProcessorSettingTab = class extends import_obsidian6.PluginSettingTab {
                 if (!t) return;
                 const f = this.plugin.settings.actions.find((a) => a.name.trim() === t);
                 if (!f) {
-                  new import_obsidian6.Notice(`\u672A\u627E\u5230\u540D\u4E3A\u300C${t}\u300D\u7684\u52A8\u4F5C`);
+                  new import_obsidian5.Notice(`\u672A\u627E\u5230\u540D\u4E3A\u300C${t}\u300D\u7684\u52A8\u4F5C`);
                   step.actionId = step.originalActionId;
                   stepPicker.setValue(this.actionNameById(step.actionId));
                 }
@@ -1519,9 +1506,9 @@ var TextProcessorSettingTab = class extends import_obsidian6.PluginSettingTab {
         };
         renderSteps = buildSteps;
         buildSteps();
-        const addSetting = new import_obsidian6.Setting(body).setName("\u65B0\u6B65\u9AA4");
+        const addSetting = new import_obsidian5.Setting(body).setName("\u65B0\u6B65\u9AA4");
         addSetting.settingEl.addClass("text-batch-step-add-row");
-        this.addPicker = new ActionPicker(addSetting.controlEl, {
+        this.addPicker = new ActionPicker(addSetting.settingEl, {
           placeholder: "\u8F93\u5165\u6216\u9009\u62E9\u52A8\u4F5C\u2026",
           getOptions: () => this.plugin.settings.actions.map((a) => ({
             id: a.id,
@@ -1547,7 +1534,7 @@ var TextProcessorSettingTab = class extends import_obsidian6.PluginSettingTab {
   // ===== 列表区块（动作 / 序列共用，差异收敛到回调）=====
   renderSection(container, type, items, opts) {
     container.createEl("h2", { text: opts.title, cls: "text-batch-section-title" });
-    new import_obsidian6.Setting(container).setName(opts.addLabel).setDesc(opts.desc).addButton(
+    new import_obsidian5.Setting(container).setName(opts.addLabel).setDesc(opts.desc).addButton(
       (btn) => btn.setButtonText("+ " + opts.addLabel).onClick(() => this.addItem(type, ""))
     );
     const groups = this.groupItems(items, (it) => it.category ?? "");
@@ -1584,17 +1571,17 @@ var TextProcessorSettingTab = class extends import_obsidian6.PluginSettingTab {
     });
     let allCollapsed = true;
     const collapseBtn = toolbar.createEl("button", { cls: "text-batch-toolbar-btn", title: "\u5168\u90E8\u5C55\u5F00" });
-    (0, import_obsidian6.setIcon)(collapseBtn, "maximize-2");
+    (0, import_obsidian5.setIcon)(collapseBtn, "maximize-2");
     collapseBtn.addEventListener("click", () => {
       if (allCollapsed) {
         groupState.forEach((g) => g.details.open = true);
         allCollapsed = false;
-        (0, import_obsidian6.setIcon)(collapseBtn, "minimize-2");
+        (0, import_obsidian5.setIcon)(collapseBtn, "minimize-2");
         collapseBtn.title = "\u5168\u90E8\u6298\u53E0";
       } else {
         groupState.forEach((g) => g.details.open = false);
         allCollapsed = true;
-        (0, import_obsidian6.setIcon)(collapseBtn, "maximize-2");
+        (0, import_obsidian5.setIcon)(collapseBtn, "maximize-2");
         collapseBtn.title = "\u5168\u90E8\u5C55\u5F00";
       }
       applyFilter();
@@ -1802,18 +1789,18 @@ var TextProcessorSettingTab = class extends import_obsidian6.PluginSettingTab {
       renderCard: (p, it, isNew) => this.renderSequenceCard(p, it, isNew)
     });
     containerEl.createEl("h2", { text: "\u5BFC\u5165 / \u5BFC\u51FA", cls: "text-batch-section-title" });
-    new import_obsidian6.Setting(containerEl).setName("\u5BFC\u51FA\u5F53\u524D\u914D\u7F6E").setDesc("\u628A\u5168\u90E8\u52A8\u4F5C\u4E0E\u5E8F\u5217\u5BFC\u51FA\u4E3A JSON\uFF0C\u53EF\u4E0B\u8F7D\u5230\u672C\u5730\uFF0C\u7528\u4E8E\u5907\u4EFD\u6216\u5206\u4EAB\u7ED9\u4ED6\u4EBA\u3002").addButton(
+    new import_obsidian5.Setting(containerEl).setName("\u5BFC\u51FA\u5F53\u524D\u914D\u7F6E").setDesc("\u628A\u5168\u90E8\u52A8\u4F5C\u4E0E\u5E8F\u5217\u5BFC\u51FA\u4E3A JSON\uFF0C\u53EF\u4E0B\u8F7D\u5230\u672C\u5730\uFF0C\u7528\u4E8E\u5907\u4EFD\u6216\u5206\u4EAB\u7ED9\u4ED6\u4EBA\u3002").addButton(
       (btn) => btn.setButtonText("\u5BFC\u51FA").onClick(async () => {
         const text = exportPackText(this.plugin.settings);
         await downloadPack(this.app, text);
       })
     );
-    new import_obsidian6.Setting(containerEl).setName("\u5BFC\u5165\u914D\u7F6E").setDesc("\u4ECE\u7C98\u8D34 / \u672C\u5730\u6587\u4EF6 / \u8FDC\u7A0B\u5730\u5740\u5BFC\u5165\u52A8\u4F5C\u4E0E\u5E8F\u5217\uFF1B\u89E3\u6790\u540E\u4F1A\u63D0\u793A\u91CD\u590D\u4E0E\u51B2\u7A81\uFF0C\u5E76\u652F\u6301\u67E5\u770B\u660E\u7EC6\u3002").addButton(
+    new import_obsidian5.Setting(containerEl).setName("\u5BFC\u5165\u914D\u7F6E").setDesc("\u4ECE\u7C98\u8D34 / \u672C\u5730\u6587\u4EF6 / \u8FDC\u7A0B\u5730\u5740\u5BFC\u5165\u52A8\u4F5C\u4E0E\u5E8F\u5217\uFF1B\u89E3\u6790\u540E\u4F1A\u63D0\u793A\u91CD\u590D\u4E0E\u51B2\u7A81\uFF0C\u5E76\u652F\u6301\u67E5\u770B\u660E\u7EC6\u3002").addButton(
       (btn) => btn.setButtonText("\u5BFC\u5165").onClick(() => {
         new ImportModal(this.plugin.app, this.plugin, void 0, () => this.display()).open();
       })
     );
-    new import_obsidian6.Setting(containerEl).setName("\u6E05\u9664\u6240\u6709\u52A8\u4F5C\u4E0E\u5E8F\u5217").setDesc(
+    new import_obsidian5.Setting(containerEl).setName("\u6E05\u9664\u6240\u6709\u52A8\u4F5C\u4E0E\u5E8F\u5217").setDesc(
       "\u6E05\u7A7A\u5F53\u524D\u5168\u90E8\u52A8\u4F5C\u4E0E\u5E8F\u5217\uFF08\u4E0D\u53EF\u64A4\u9500\uFF09\u3002\u70B9\u51FB\u540E\u4F1A\u5148\u81EA\u52A8\u628A\u5F53\u524D\u914D\u7F6E\u5907\u4EFD\u5230\u63D2\u4EF6\u76EE\u5F55\uFF08\u6587\u4EF6\u540D\u542B\u65E5\u671F\uFF09\uFF0C\u518D\u8981\u6C42\u4E8C\u6B21\u786E\u8BA4\u3002"
     ).addButton(
       (btn) => btn.setButtonText("\u6E05\u9664\u5168\u90E8").setWarning().onClick(() => {
@@ -1861,20 +1848,20 @@ var TextProcessorSettingTab = class extends import_obsidian6.PluginSettingTab {
     try {
       await this.app.vault.adapter.write(backupPath, content);
     } catch (e) {
-      new import_obsidian6.Notice("\u5907\u4EFD\u5931\u8D25\uFF1A" + e.message + "\uFF1B\u5DF2\u53D6\u6D88\u6E05\u9664\u3002");
+      new import_obsidian5.Notice("\u5907\u4EFD\u5931\u8D25\uFF1A" + e.message + "\uFF1B\u5DF2\u53D6\u6D88\u6E05\u9664\u3002");
       return;
     }
     this.plugin.settings.actions = [];
     this.plugin.settings.sequences = [];
     await this.plugin.saveSettings();
     this.display();
-    new import_obsidian6.Notice(`\u5DF2\u6E05\u9664\u5168\u90E8\uFF0C\u5907\u4EFD\u5DF2\u4FDD\u5B58\u5230 ${backupPath}`);
+    new import_obsidian5.Notice(`\u5DF2\u6E05\u9664\u5168\u90E8\uFF0C\u5907\u4EFD\u5DF2\u4FDD\u5B58\u5230 ${backupPath}`);
   }
 };
 
 // src/picker.ts
-var import_obsidian7 = require("obsidian");
-var PickerModal = class extends import_obsidian7.FuzzySuggestModal {
+var import_obsidian6 = require("obsidian");
+var PickerModal = class extends import_obsidian6.FuzzySuggestModal {
   constructor(app, plugin) {
     super(app);
     this.plugin = plugin;
@@ -1896,9 +1883,9 @@ var PickerModal = class extends import_obsidian7.FuzzySuggestModal {
     return `${star}${kind}\uFF1A\u3010${cat}\u3011${name}`;
   }
   onChooseItem(item) {
-    const editor = this.plugin.app.workspace.getActiveViewOfType(import_obsidian7.MarkdownView)?.editor;
+    const editor = this.plugin.app.workspace.getActiveViewOfType(import_obsidian6.MarkdownView)?.editor;
     if (!editor) {
-      new import_obsidian7.Notice("\u8BF7\u5148\u6253\u5F00\u4E00\u7BC7\u7B14\u8BB0");
+      new import_obsidian6.Notice("\u8BF7\u5148\u6253\u5F00\u4E00\u7BC7\u7B14\u8BB0");
       return;
     }
     const selection = editor.getSelection();
@@ -1914,13 +1901,13 @@ var PickerModal = class extends import_obsidian7.FuzzySuggestModal {
         else editor.setValue(out);
       }
     } catch (e) {
-      new import_obsidian7.Notice("\u6267\u884C\u51FA\u9519\uFF1A" + e.message);
+      new import_obsidian6.Notice("\u6267\u884C\u51FA\u9519\uFF1A" + e.message);
     }
   }
 };
 
 // src/main.ts
-var TextProcessorPlugin = class extends import_obsidian8.Plugin {
+var TextProcessorPlugin = class extends import_obsidian7.Plugin {
   constructor() {
     super(...arguments);
     this.commandIds = [];
@@ -2021,7 +2008,7 @@ var TextProcessorPlugin = class extends import_obsidian8.Plugin {
         editor.setValue(transform(editor.getValue()));
       }
     } catch (e) {
-      new import_obsidian8.Notice("\u6587\u672C\u6279\u5904\u7406\u6267\u884C\u51FA\u9519\uFF1A" + e.message);
+      new import_obsidian7.Notice("\u6587\u672C\u6279\u5904\u7406\u6267\u884C\u51FA\u9519\uFF1A" + e.message);
     }
   }
 };
