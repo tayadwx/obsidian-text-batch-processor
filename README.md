@@ -32,7 +32,7 @@
 3. 输入仓库地址：`tayadwx/obsidian-text-batch-processor`
 4. 启用「文本批处理」插件。
 
-> BRAT 依赖 GitHub Release。若手动更新，请在仓库打一个与 `manifest.json` 中 `version` 一致的 Release（如 `1.1.0-beta1`），并在 Release 的附件里上传 `manifest.json`、`main.js`、`styles.css`。**版本号含 `-`（如 `1.1.0-beta1`）会被标记为预发布（Pre-release），适合 BRAT 测试用户抢先体验。**
+> BRAT 依赖 GitHub Release。若手动更新，请在仓库打一个与 `manifest.json` 中 `version` 一致的 Release（如 `1.1.0`），并在 Release 的附件里上传 `manifest.json`、`main.js`、`styles.css`。**版本号含 `-`（如 `1.1.0-beta1`）会被标记为预发布（Pre-release），适合抢先体验；正式版本（如 `1.1.0`，不含 `-`）为正式发布，BRAT 用户会自动更新到最新正式版。**
 
 ### 方式二：手动安装
 
