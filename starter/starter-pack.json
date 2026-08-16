@@ -1,0 +1,195 @@
+{
+  "$schema": "text-batch-processor-pack",
+  "version": 1,
+  "actions": [
+    {
+      "name": "转小写",
+      "category": "基础",
+      "favorite": true,
+      "code": "return text.toLowerCase();"
+    },
+    {
+      "name": "转大写",
+      "category": "基础",
+      "favorite": true,
+      "code": "return text.toUpperCase();"
+    },
+    {
+      "name": "每个单词首字母大写",
+      "category": "基础",
+      "code": "return text.replace(/(^|\\s)(\\S)/g, (m, pre, ch) => pre + ch.toUpperCase());"
+    },
+    {
+      "name": "句首字母大写",
+      "category": "基础",
+      "code": "return text.replace(/(^|[.!?。！？]\\s*)([A-Za-z])/g, (m, pre, ch) => pre + ch.toUpperCase());"
+    },
+    {
+      "name": "标题式大小写",
+      "category": "基础",
+      "code": "const small = ['a','an','the','and','or','but','for','nor','on','in','at','to','by','of','with','as','from'];\nreturn text.split(' ').map((word, i, arr) => {\n  const m = word.match(/^(\\W*)(.*?)(\\W*)$/);\n  const lead = m[1], core = m[2], trail = m[3];\n  const capped = core.charAt(0).toUpperCase() + core.slice(1).toLowerCase();\n  const isSmall = small.includes(core.toLowerCase());\n  const out = (i === 0 || i === arr.length - 1 || !isSmall) ? capped : core.toLowerCase();\n  return lead + out + trail;\n}).join(' ');"
+    },
+    {
+      "name": "大小写交替（海绵体）",
+      "category": "基础",
+      "code": "let up = true;\nreturn text.replace(/[A-Za-z]/g, (c) => {\n  const r = up ? c.toUpperCase() : c.toLowerCase();\n  up = !up;\n  return r;\n});"
+    },
+    {
+      "name": "转为网址别名",
+      "category": "基础",
+      "code": "return text.toString().toLowerCase().trim()\n  .replace(/\\s+/g, '-')\n  .replace(/[^\\w一-龥-]+/g, '')\n  .replace(/-{2,}/g, '-')\n  .replace(/^-+/, '')\n  .replace(/-+$/, '');"
+    },
+    {
+      "name": "转为蛇形命名",
+      "category": "基础",
+      "code": "return text.toLowerCase().replace(/\\s+/g, '_');"
+    },
+    {
+      "name": "标题升一级",
+      "category": "Markdown",
+      "code": "return text.replace(/^(#{1,5})\\s+/gm, (m, h) => '#' + h + ' ');"
+    },
+    {
+      "name": "标题降一级",
+      "category": "Markdown",
+      "favorite": true,
+      "code": "return text.replace(/^(#{2,6})\\s+/gm, (m, h) => h.slice(1) + ' ');"
+    },
+    {
+      "name": "转为标注块",
+      "category": "Markdown",
+      "code": "if (/^>\\s*\\[!/.test(text)) return text;\nconst lines = text.split('\\n');\nconst body = lines.map(l => l.trim() === '' ? l : (l.startsWith('>') ? l : '> ' + l)).join('\\n');\nreturn '> [!note]\\n' + body;"
+    },
+    {
+      "name": "规范化无序列表",
+      "category": "列表",
+      "code": "return text\n  .replace(/[•‣◦⦿●○▪▫]/gu, '-')\n  .split('\\n')\n  .map(l => l.replace(/^\\s*[-*]\\s*/, '- '))\n  .filter(l => l.trim() !== '')\n  .join('\\n');"
+    },
+    {
+      "name": "规范化有序列表",
+      "category": "列表",
+      "code": "let n = 0;\nreturn text\n  .split('\\n')\n  .map(l => {\n    if (/^\\s*[a-zA-Z0-9][.)]\\s+/.test(l)) { n++; return l.replace(/^\\s*[a-zA-Z0-9][.)]\\s+/, n + '. '); }\n    return l;\n  })\n  .filter(l => l.trim() !== '')\n  .join('\\n');"
+    },
+    {
+      "name": "表格转无序列表",
+      "category": "列表",
+      "code": "const lines = text.split('\\n').filter(l => l.includes('|') && !/^\\s*\\|?[-: |]+\\|?\\s*$/.test(l));\nconst out = [];\nfor (const line of lines) {\n  const cells = line.split('|').map(c => c.trim()).filter(c => c !== '');\n  if (!cells.length) continue;\n  out.push('- ' + cells[0]);\n  for (let i = 1; i < cells.length; i++) out.push('  - ' + cells[i]);\n}\nreturn out.join('\\n');"
+    },
+    {
+      "name": "表格转带表头列表",
+      "category": "列表",
+      "code": "const lines = text.split('\\n').filter(l => l.includes('|') && !/^\\s*\\|?[-: |]+\\|?\\s*$/.test(l));\nif (!lines.length) return text;\nconst header = lines[0].split('|').map(c => c.trim()).filter(c => c !== '');\nconst out = [];\nfor (let r = 1; r < lines.length; r++) {\n  const cells = lines[r].split('|').map(c => c.trim()).filter(c => c !== '');\n  if (!cells.length) continue;\n  out.push('- ' + cells[0]);\n  for (let i = 1; i < cells.length; i++) {\n    const h = header[i] || '';\n    out.push('  - ' + (h ? h + ': ' : '') + cells[i]);\n  }\n}\nreturn out.join('\\n');"
+    },
+    {
+      "name": "待办列表排序",
+      "category": "列表",
+      "code": "return text.split('\\n').sort((a, b) => {\n  const ca = a.replace(/^[-*]\\s*\\[[ xX]\\]\\s*/, '').toLowerCase();\n  const cb = b.replace(/^[-*]\\s*\\[[ xX]\\]\\s*/, '').toLowerCase();\n  return ca.localeCompare(cb);\n}).join('\\n');"
+    },
+    {
+      "name": "去除 Wiki 链接",
+      "category": "链接",
+      "code": "return text.replace(/\\[\\[([^\\]|]+)(?:\\|([^\\]]+))?\\]\\]/g, (m, t, alias) => alias ? alias : t);"
+    },
+    {
+      "name": "去除链接格式",
+      "category": "链接",
+      "code": "return text.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g, '$1');"
+    },
+    {
+      "name": "链接转 Wiki 链接",
+      "category": "链接",
+      "code": "return text.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g, '[[$1]]');"
+    },
+    {
+      "name": "Wiki 链接转 Markdown 链接",
+      "category": "链接",
+      "code": "return text.replace(/\\[\\[([^\\]|]+)(?:\\|([^\\]]+))?\\]\\]/g, (m, t, alias) => {\n  const label = alias || t;\n  return '[' + label + '](' + t + '.md)';\n});"
+    },
+    {
+      "name": "去除多余空格",
+      "category": "OCR文本清理",
+      "favorite": false,
+      "code": "return text.replace(/[ \\t]+/g, ' ').replace(/\\s+([,.;:!?。，；：！？])/g, '$1').trim();"
+    },
+    {
+      "name": "去除所有空格",
+      "category": "OCR文本清理",
+      "code": "return text.replace(/\\s+/g, '');"
+    },
+    {
+      "name": "去除行尾空格",
+      "category": "OCR文本清理",
+      "code": "return text.replace(/[ \\t]+$/gm, '');"
+    },
+    {
+      "name": "去除空行",
+      "category": "OCR文本清理",
+      "favorite": true,
+      "code": "return text.replace(/\\n{2,}/g, '\\n');"
+    },
+    {
+      "name": "合并断裂段落",
+      "category": "OCR文本清理",
+      "code": "return text.split(/\\n{2,}/).map(block =>\n  block.replace(/\\s*\\n\\s*/g, ' ').replace(/[ \\t]+/g, ' ').trim()\n).join('\\n\\n');"
+    },
+    {
+      "name": "按空白拆分",
+      "category": "OCR文本清理",
+      "code": "return text.replace(/[ \\t]{2,}/g, '\\n');"
+    },
+    {
+      "name": "转为中文标点",
+      "category": "OCR文本清理",
+      "code": "const map = { ',':'，', ';':'；', ':':'：', '!':'！', '?':'？' };\nreturn text.replace(/[,;:!?]/g, c => map[c] || c);"
+    },
+    {
+      "name": "转为英文标点",
+      "category": "OCR文本清理",
+      "code": "const map = { '，':',', '；':';', '：':':', '！':'!', '？':'?' };\nreturn text.replace(/[，；：！？]/g, c => map[c] || c);"
+    },
+    {
+      "name": "去除连字符换行",
+      "category": "OCR文本清理",
+      "code": "return text.replace(/\\u00AD/g, '').replace(/-\\s*\\n\\s*/g, '').replace(/[\\u2010\\u2011‐‑–—]/g, ' ');"
+    },
+    {
+      "name": "替换连字",
+      "category": "OCR文本清理",
+      "code": "const lig = { '\\uFB01':'fi', '\\uFB02':'fl', '\\uFB00':'ff', '\\uFB03':'ffi', '\\uFB04':'ffl', '\\uFB05':'st', '\\uFB06':'st' };\nreturn text.replace(/[\\uFB01\\uFB02\\uFB00\\uFB03\\uFB04\\uFB05\\uFB06]/g, c => lig[c] || c);"
+    }
+  ],
+  "sequences": [
+    {
+      "name": "OCR 文本修复",
+      "category": "OCR文本清理",
+      "favorite": false,
+      "steps": [
+        {
+          "actionName": "去除连字符换行"
+        },
+        {
+          "actionName": "合并断裂段落"
+        },
+        {
+          "actionName": "去除多余空格"
+        },
+        {
+          "actionName": "去除空行"
+        }
+      ]
+    },
+    {
+      "name": "Markdown 标题清理",
+      "category": "Markdown",
+      "favorite": false,
+      "steps": [
+        {
+          "actionName": "标题降一级"
+        },
+        {
+          "actionName": "去除空行"
+        }
+      ]
+    }
+  ]
+}

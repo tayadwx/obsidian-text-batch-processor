@@ -46,7 +46,7 @@ jobs:
 
       - name: 安装依赖并构建
         run: |
-          npm install
+          npm ci
           npm run build
 
       - name: 发布 Release（语义化 tag，自动递增 patch）

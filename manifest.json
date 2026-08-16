@@ -1,7 +1,7 @@
 {
   "id": "text-batch-processor",
   "name": "文本批处理",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minAppVersion": "1.4.0",
   "description": "选中文本后，用可自定义代码编写的动作自由组合成序列进行批处理。支持右键菜单、命令面板、快捷键与移动端工具栏。",
   "author": "tayadwx",

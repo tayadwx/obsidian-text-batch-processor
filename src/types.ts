@@ -2,6 +2,8 @@
 export interface UserAction {
   id: string;
   name: string;
+  // 类别（可选）：用于设置页分组与命令面板展示。空值表示“未分类”。
+  category?: string;
   // 是否设为“常用”：常用动作会直接出现在右键二级菜单里，方便一键调用
   favorite?: boolean;
   // 一段 JavaScript 代码（函数体，可多行），必须 return 一个字符串。
@@ -19,6 +21,8 @@ export interface SequenceStep {
 export interface Sequence {
   id: string;
   name: string;
+  // 类别（可选）：用于设置页分组与命令面板展示。空值表示“未分类”。
+  category?: string;
   // 是否设为“常用”：常用序列会直接出现在右键二级菜单里，方便一键调用
   favorite?: boolean;
   steps: SequenceStep[];
@@ -43,13 +47,15 @@ export const DEFAULT_SETTINGS: PluginSettings = {
     {
       id: 'builtin-remove-extra-blank-lines',
       name: '去除多余空行',
-      // 连续多个“空行或只有空格/全角空格的行”合并为一个空行
+      // 连续多个“空行或只有空白字符的行”合并为一个空行。
+      // \p{White_Space}（需 u 标志）匹配所有 Unicode 空白：半角空格、全角空格、
+      // Tab、不间断空格（\u00A0）以及其它各类 Unicode 空格，一并视为“空行”。
       code:
         'const lines = text.split(\'\\n\');\n' +
         'const out = [];\n' +
         'let prevBlank = false;\n' +
         'for (const line of lines) {\n' +
-        "  const isBlank = /^[\\s\\u3000]*$/.test(line);\n" +
+        "  const isBlank = /^[\\p{White_Space}]*$/u.test(line);\n" +
         '  if (isBlank) {\n' +
         '    if (!prevBlank) out.push(\'\');\n' +
         '    prevBlank = true;\n' +

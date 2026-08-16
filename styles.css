@@ -1,5 +1,497 @@
 /* 文本批处理插件样式 */
+.text-batch-strat-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.text-batch-strat-desc {
+  font-size: var(--font-smaller);
+  margin: 2px 0 6px 22px;
+  line-height: 1.4;
+}
 .text-batch-code {
   font-family: var(--font-monospace);
   width: 100%;
+  resize: vertical;
+}
+
+/* ===== 可复用输入框：原生 datalist + 框内左侧清空按钮 ===== */
+/* 外层 .text-batch-input 是定位容器；内层 .text-batch-input-el 才是真正的 input。
+   下拉候选由浏览器原生 <input list> 提供（点击输入框聚焦即弹出），不再使用自定义下拉。 */
+.text-batch-input {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.text-batch-field .text-batch-input,
+.text-batch-steps .text-batch-input,
+.text-batch-step-add-row .text-batch-input {
+  width: 100%;
+}
+.text-batch-input-el {
+  width: 100%;
+  height: var(--input-height);
+  padding: 0 24px 0 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+}
+.text-batch-input-el:focus {
+  border-color: var(--interactive-accent);
+}
+/* 清空按钮（✕）：固定在输入框右侧，远离原生 datalist 箭头 */
+.text-batch-clear {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0;
+  font-size: 11px;
+  line-height: 1;
+  z-index: 2;
+}
+.text-batch-clear:hover {
+  color: var(--text-normal);
+}
+/* 带下拉候选的输入框：清空按钮进一步右移，给原生 datalist 箭头让出空间 */
+.text-batch-input-has-list .text-batch-input-el {
+  padding-right: 46px;
+}
+.text-batch-input-has-list .text-batch-clear {
+  right: 24px;
+}
+/* 动作选择器专用：清空按钮再向左移动约 16px，避免被自定义下拉按钮遮挡 */
+.text-batch-picker .text-batch-input-el {
+  padding-right: 58px;
+}
+.text-batch-picker .text-batch-clear {
+  right: 40px;
+}
+/* 自定义下拉的触发按钮（chevron），位于输入框最右侧，点击展开/收起列表 */
+.text-batch-dropdown-btn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0;
+  z-index: 2;
+}
+.text-batch-dropdown-btn:hover {
+  color: var(--text-normal);
+}
+.text-batch-dropdown-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ===== 自定义动作下拉列表（替代原生 datalist，可滚动、键盘高亮可见）===== */
+/* 挂在设置 modal 容器(.modal-container)内，position:absolute 跟随输入框（JS 实时计算相对坐标）。
+   这样不受 Obsidian 主窗口 transform 影响而错位，也不会被设置页内部滚动容器裁剪。
+   z-index 在 modal 容器层级内保持最高，确保浮在最上层。 */
+.text-batch-picker-list {
+  position: absolute;
+  z-index: 100000;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  font-size: var(--font-ui-small);
+  padding: 4px 0;
+}
+.text-batch-picker-item {
+  padding: 5px 10px;
+  cursor: pointer;
+  color: var(--text-normal);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.text-batch-picker-item:hover {
+  background: var(--background-modifier-hover);
+}
+.text-batch-picker-item-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+.text-batch-picker-item-active:hover {
+  background: var(--interactive-accent-hover);
+}
+.text-batch-picker-empty {
+  padding: 8px 10px;
+  color: var(--text-muted);
+  font-size: var(--font-smaller);
+}
+
+/* 常用（★）按钮：仅保留五角星图标，收藏态用强调色区分 */
+.text-batch-fav {
+  color: var(--text-muted);
+}
+.text-batch-fav.text-batch-fav-on {
+  color: var(--text-warning);
+}
+.text-batch-fav:hover {
+  color: var(--text-normal);
+}
+
+/* 序列步骤行 + 新步骤行：标签、输入框、按钮严格对齐 */
+.text-batch-steps .setting-item,
+.text-batch-step-add-row {
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+}
+.text-batch-steps .setting-item-info,
+.text-batch-step-add-row .setting-item-info {
+  flex: 0 0 80px;
+  min-width: 80px;
+  margin-right: 0;
+  white-space: nowrap;
+}
+/* 统一控制区为 1fr + 3 个等宽按钮槽，确保「步骤 N」与「新步骤」输入框等宽，
+   且「新步骤」的添加按钮与「步骤 N」的上移按钮左对齐 */
+.text-batch-steps .setting-item-control,
+.text-batch-step-add-row .setting-item-control {
+  display: grid;
+  grid-template-columns: 1fr 28px 28px 28px;
+  gap: 4px;
+  align-items: center;
+  flex: 1 1 auto;
+}
+.text-batch-steps .setting-item-control > *,
+.text-batch-step-add-row .setting-item-control > * {
+  min-width: 0;
+}
+.text-batch-steps .text-batch-input,
+.text-batch-step-add-row .text-batch-input {
+  width: 100%;
+  min-width: 0;
+}
+/* 步骤行 + 新步骤行内的 Obsidian 按钮统一为 28×28，贴合网格槽位（排除清空按钮） */
+.text-batch-steps .setting-item-control button:not(.text-batch-clear),
+.text-batch-step-add-row .setting-item-control button:not(.text-batch-clear) {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 新步骤行的「添加」按钮放在第 2 列（与上移按钮左对齐） */
+.text-batch-step-add-row .text-batch-step-btn {
+  grid-column: 2;
+}
+
+/* 页面一级标题：动作 / 序列 / 导入导出 */
+.text-batch-section-title {
+  font-size: var(--font-ui-large);
+  font-weight: var(--font-semibold);
+  color: var(--text-normal);
+  border-bottom: 2px solid var(--interactive-accent);
+  padding-bottom: 4px;
+  margin: 20px 0 10px;
+}
+
+/* 名称输入框：重名 / 空名 时标红 */
+.text-batch-name-error {
+  border-color: var(--text-error) !important;
+}
+
+/* ===== 可折叠卡片（动作 / 序列）===== */
+.text-batch-card {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  margin: 6px 0;
+  background: var(--background-secondary);
+  /* 必须为 visible：动作选择器下拉层挂在卡片内部（position:absolute），
+     若 hidden 会被卡片边界截断；圆角观感由下方 summary/body 各自圆角维持 */
+  overflow: visible;
+}
+.text-batch-card[open] {
+  background: var(--background-primary);
+}
+.text-batch-card-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  border-top-left-radius: var(--radius-s);
+  border-top-right-radius: var(--radius-s);
+}
+.text-batch-card-summary::-webkit-details-marker {
+  display: none;
+}
+.text-batch-card-summary::before {
+  content: '▸';
+  color: var(--text-muted);
+  font-size: 0.8em;
+  transition: transform 0.1s ease;
+}
+.text-batch-card[open] > .text-batch-card-summary::before {
+  transform: rotate(90deg);
+}
+.text-batch-card-title {
+  flex: 1;
+  font-weight: var(--font-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.text-batch-card-meta {
+  color: var(--text-muted);
+  font-size: var(--font-smaller);
+  white-space: nowrap;
+}
+.text-batch-card-btn {
+  border: 1px solid var(--background-modifier-border);
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  border-radius: var(--radius-s);
+  padding: 2px 8px;
+  cursor: pointer;
+  font-size: var(--font-smaller);
+  line-height: 1.6;
+}
+.text-batch-card-btn:hover {
+  background: var(--interactive-hover);
+}
+.text-batch-danger {
+  color: var(--text-error);
+  border-color: var(--text-error);
+}
+.text-batch-body {
+  padding: 0 10px 10px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+/* ===== 导入预览：重复 / 冲突提示 ===== */
+.text-batch-parse-ok {
+  color: var(--text-success);
+  font-weight: var(--font-semibold);
+}
+.text-batch-muted {
+  color: var(--text-muted);
+  font-size: var(--font-smaller);
+}
+.text-batch-dupe-box {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  padding: 8px 10px;
+  margin: 8px 0;
+  background: var(--background-secondary);
+}
+.text-batch-dupe-box-title {
+  font-weight: var(--font-semibold);
+  margin-bottom: 4px;
+}
+.text-batch-dupe {
+  margin: 6px 0;
+}
+.text-batch-dupe-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.text-batch-dupe-title {
+  font-weight: var(--font-semibold);
+}
+.text-batch-link {
+  color: var(--text-accent);
+  cursor: pointer;
+  font-size: var(--font-smaller);
+}
+.text-batch-link:hover {
+  text-decoration: underline;
+}
+.text-batch-dupe-detail {
+  margin: 4px 0 4px 4px;
+  padding-left: 8px;
+  border-left: 2px solid var(--background-modifier-border);
+}
+.text-batch-dupe-line {
+  font-size: var(--font-smaller);
+  line-height: 1.7;
+}
+.text-batch-dupe-desc {
+  margin-top: 2px;
+}
+
+/* ===== 卡片主体（展开后的编辑区）===== */
+/* 注意：此处刻意不设 container-type:inline-size。
+   在「类别<details> → 卡片<details>」嵌套结构下，尺寸包含上下文会与折叠/展开
+   的渲染树切换产生冲突；在 Windows 分数缩放下 Chromium 偶发「展开后内部步骤
+   不重绘/被截断」的 paint bug（仅 PC 出现，Mac 正常）。改用下方 auto-fit 网格
+   实现窄卡片自动单列，彻底避开该问题。 */
+.text-batch-card-body {
+  padding: 0 10px 10px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+/* 名称 + 类别：宽卡片同行为两列，窄卡片（容器不足两列最小宽度）自动改为单列。
+   用 auto-fit + minmax 实现响应布局，避免依赖 container-type 尺寸包含上下文
+   （该上下文在折叠 <details> 内会触发跨平台裁剪问题）。 */
+.text-batch-inline-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 6px 0;
+}
+.text-batch-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.text-batch-field-label {
+  font-size: var(--font-smaller);
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+/* 代码区：标题行（代码 + 保存/取消 同一行）+ 下方全宽文本域 */
+.text-batch-code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+.text-batch-code-btns {
+  display: flex;
+  gap: 8px;
+}
+.text-batch-code-wrap {
+  margin-top: 6px;
+}
+/* 卡片底部操作区：保存 / 取消 靠右（序列卡片用） */
+.text-batch-card-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* ===== 类别分组（默认收拢）===== */
+.text-batch-group {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  margin: 10px 0;
+  background: var(--background-secondary);
+  /* 必须为 visible：卡片内的动作选择器下拉需能超出分组边界显示 */
+  overflow: visible;
+}
+.text-batch-group > .text-batch-group-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  background: var(--background-modifier-hover);
+  border-top-left-radius: var(--radius-s);
+  border-top-right-radius: var(--radius-s);
+}
+.text-batch-group-summary::-webkit-details-marker {
+  display: none;
+}
+.text-batch-group-summary::before {
+  content: '▸';
+  color: var(--text-muted);
+  font-size: 0.8em;
+  transition: transform 0.1s ease;
+}
+.text-batch-group[open] > .text-batch-group-summary::before {
+  transform: rotate(90deg);
+}
+.text-batch-group-title {
+  flex: 1;
+  font-weight: var(--font-semibold);
+}
+.text-batch-group-items {
+  padding: 0 8px 8px;
+}
+
+/* 排序下拉 */
+.text-batch-sort {
+  margin-left: 0;
+}
+
+/* ===== 筛选工具栏：筛选（左）+ 动态宽度输入框 + 图标按钮（右）===== */
+.text-batch-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  flex-wrap: nowrap;
+}
+.text-batch-toolbar-label {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.text-batch-toolbar-input {
+  flex: 1 1 auto;
+  min-width: 120px;
+}
+.text-batch-toolbar-input input {
+  width: 100%;
+}
+.text-batch-toolbar-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--interactive-normal);
+  color: var(--text-muted);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  font-size: var(--font-ui-small);
+  line-height: 1;
+}
+.text-batch-toolbar-btn:hover {
+  background: var(--interactive-hover);
+  color: var(--text-normal);
+}
+.text-batch-toolbar-sort {
+  flex: 0 0 auto;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  font-size: var(--font-ui-small);
+}
+.text-batch-toolbar-sort:hover {
+  background: var(--interactive-hover);
 }

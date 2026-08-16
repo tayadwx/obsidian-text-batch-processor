@@ -18,7 +18,7 @@
   - 快捷键：在 Obsidian 设置里给任意动作/序列命令绑定快捷键。
   - 移动端：把命令加入移动端工具栏，触屏一点即执行。
 - **常用置顶**：动作和序列都能标记为「常用」，在弹出选择框和命令里带 ★ 置顶显示，实现一键直达。
-- **按钮式序列构建器**：在设置页用「添加 / 上移 / 下移 / 删除」来组合与排序动作，简单可靠。
+- **按钮式序列构建器**：在设置页的序列编辑里，用**下拉选择器**把已有动作加为步骤（选中即自动添加），再用「上移 / 下移 / 删除」调整顺序。
 - **纯本地、无后端**：所有配置保存在插件的 `data.json` 中，不上传任何服务器。
 
 ---
@@ -32,7 +32,7 @@
 3. 输入仓库地址：`tayadwx/obsidian-text-batch-processor`
 4. 启用「文本批处理」插件。
 
-> BRAT 依赖 GitHub Release。若手动更新，请在仓库打一个与 `manifest.json` 中 `version` 一致的 Release（如 `1.0.0`），并在 Release 的附件里上传 `manifest.json`、`main.js`、`styles.css`。
+> BRAT 依赖 GitHub Release。若手动更新，请在仓库打一个与 `manifest.json` 中 `version` 一致的 Release（如 `1.0.1`），并在 Release 的附件里上传 `manifest.json`、`main.js`、`styles.css`。
 
 ### 方式二：手动安装
 
@@ -57,8 +57,8 @@
 
 1. 在设置页的「序列」区点 **+ 新增序列**。
 2. 命名序列，例如「清理标题与空行」。
-3. 用 **添加动作** 把已有动作加进来，再用 **上移 / 下移 / 删除** 调整顺序。
-4. 改动实时保存。
+3. 在下方的动作下拉里选一个已有动作，**选中即自动添加为步骤**，再用 **上移 / 下移 / 删除** 调整顺序。
+4. 调整后点「保存」即可生效（取消则放弃本次编辑）。
 
 ### 3. 调用动作或序列
 
@@ -154,7 +154,7 @@ npm install        # 安装依赖
 npm run dev        # 开发模式，监听改动热更新（仍需 BRAT/重启插件生效）
 npm run build      # 构建出 main.js
 npm run deploy     # 仅本地：把 manifest.json/main.js/styles.css 复制到测试仓库
-                    # （默认复制到 D:/Fast-Note/.obsidian/plugins/text-batch-processor/，不会覆盖 data.json）
+                    # （默认复制到本机测试仓库的插件目录，详见 scripts/deploy.mjs 中的 dest，不会覆盖 data.json）
 ```
 
 > `scripts/deploy.mjs` 仅用于本地测试部署，已加入 `.gitignore`，不会进入公开仓库。

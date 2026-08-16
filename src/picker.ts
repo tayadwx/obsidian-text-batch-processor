@@ -39,12 +39,14 @@ export class PickerModal extends FuzzySuggestModal<PickerItem> {
     const star = item.kind === 'action'
       ? item.action.favorite ? '★ ' : ''
       : item.sequence.favorite ? '★ ' : '';
-    return (
-      star +
-      (item.kind === 'action'
-        ? '动作：' + item.action.name
-        : '序列：' + item.sequence.name)
-    );
+    const cat =
+      item.kind === 'action'
+        ? item.action.category?.trim() || '未分类'
+        : item.sequence.category?.trim() || '未分类';
+    const kind = item.kind === 'action' ? '动作' : '序列';
+    const name =
+      item.kind === 'action' ? item.action.name : item.sequence.name;
+    return `${star}${kind}：【${cat}】${name}`;
   }
 
   onChooseItem(item: PickerItem): void {

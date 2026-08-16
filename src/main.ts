@@ -43,10 +43,15 @@ export default class TextProcessorPlugin extends Plugin {
 
   // 注册自定义「双 T」图标（两个紧密排列的 T），用于命令与移动端工具栏
   private registerIcons() {
-    this.addIcon(
-      'text-batch',
-      '<path d="M3.5 6h7"/><path d="M7 6v13"/><path d="M13.5 6h7"/><path d="M17 6v13"/>'
-    );
+    try {
+      this.addIcon(
+        'text-batch',
+        '<path d="M3.5 6h7"/><path d="M7 6v13"/><path d="M13.5 6h7"/><path d="M17 6v13"/>'
+      );
+    } catch (e) {
+      // 图标注册失败不应影响插件加载：降级为无图标，命令仍可用
+      console.warn('文本批处理：自定义图标注册失败', e);
+    }
   }
 
   private clearCommands() {
@@ -61,10 +66,12 @@ export default class TextProcessorPlugin extends Plugin {
     this.clearCommands();
 
     // 1) 通用菜单命令：弹出“动作/序列”选择框（按钮/命令触发路径）
+    // 注意：移动端工具栏对自定义图标的支持不稳定，因此这里使用内置 lucide 图标
+    // text-cursor-input（PC 右键菜单已验证可显示），保证移动端能正常添加此命令。
     this.addCommand({
       id: 'open-picker',
       name: '选择动作或序列（菜单）',
-      icon: 'text-batch',
+      icon: 'text-cursor-input',
       callback: () => {
         new PickerModal(this.app, this).open();
       },
@@ -73,9 +80,10 @@ export default class TextProcessorPlugin extends Plugin {
 
     // 2) 每个动作 = 一条命令（可被快捷键 / 移动端工具栏 / 命令面板直接调用）
     for (const action of this.settings.actions) {
+      const cat = action.category?.trim() || '未分类';
       this.addCommand({
         id: `action:${action.id}`,
-        name: `动作：${action.name}`,
+        name: `动作：【${cat}】${action.name}`,
         icon: 'text-cursor-input',
         editorCallback: (editor: Editor) =>
           this.runOnEditor(editor, (t) => runAction(action, t)),
@@ -86,9 +94,10 @@ export default class TextProcessorPlugin extends Plugin {
     // 3) 每个序列 = 一条命令
     const map = this.getActionsMap();
     for (const seq of this.settings.sequences) {
+      const cat = seq.category?.trim() || '未分类';
       this.addCommand({
         id: `sequence:${seq.id}`,
-        name: `序列：${seq.name}`,
+        name: `序列：【${cat}】${seq.name}`,
         icon: 'text-cursor-input',
         editorCallback: (editor: Editor) =>
           this.runOnEditor(editor, (t) => runSequence(seq, map, t)),

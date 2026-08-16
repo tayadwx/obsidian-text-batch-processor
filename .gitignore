@@ -14,3 +14,6 @@ Thumbs.db
 
 # 本地部署测试脚本（仅本地用，复制 main.js 到测试 vault，不公开）
 scripts/deploy.mjs
+
+# 临时测试 harness（本地验证用，不进仓库）
+_harness/
